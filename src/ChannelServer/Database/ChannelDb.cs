@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Aura.Channel.Scripting;
 using Aura.Channel.Skills;
+using Aura.Channel.Util;
 using Aura.Channel.World;
 using Aura.Channel.World.Entities;
 using Aura.Channel.World.Entities.Creatures;
@@ -58,6 +59,19 @@ namespace Aura.Channel.Database
 						account.Id = reader.GetStringSafe("accountId");
 						account.SessionKey = reader.GetInt64("sessionKey");
 						account.Authority = reader.GetByte("authority");
+						account.AutobanScore = reader.GetInt32("autobanScore");
+						account.AutobanCount = reader.GetInt32("autobanCount");
+						account.LastAutobanReduction = reader.GetDateTimeSafe("lastAutobanReduction");
+
+						if (ChannelServer.Instance.Conf.Autoban.ReductionTime.Ticks != 0)
+						{
+							var elapsed = DateTime.Now - account.LastAutobanReduction;
+							var delta = (int) (elapsed.Ticks / ChannelServer.Instance.Conf.Autoban.ReductionTime.Ticks);
+
+							account.AutobanScore = Math.Max(0, account.AutobanScore - delta);
+							account.LastAutobanReduction = account.LastAutobanReduction.Add(
+								TimeSpan.FromTicks(ChannelServer.Instance.Conf.Autoban.ReductionTime.Ticks * delta));
+						}
 					}
 				}
 
@@ -540,6 +554,22 @@ namespace Aura.Channel.Database
 			}
 		}
 
+		public void LogAutobanIncident(Account a, IncidentSeverityLevel level, string report)
+		{
+			using (var conn = AuraDb.Instance.Connection)
+			{
+				using (var cmd = new InsertCommand("INSERT INTO `autoban` {0}", conn))
+				{
+					cmd.Set("accountId", a.Id);
+					cmd.Set("date", DateTime.Now);
+					cmd.Set("severity", (int) level);
+					cmd.Set("report", report);
+
+					cmd.Execute();
+				}
+			}
+		}
+
 		/// <summary>
 		/// Saves all quests of character.
 		/// </summary>
@@ -620,6 +650,9 @@ namespace Aura.Channel.Database
 				cmd.Set("lastlogin", account.LastLogin);
 				cmd.Set("banReason", account.BanReason);
 				cmd.Set("banExpiration", account.BanExpiration);
+				cmd.Set("autobanScore", account.AutobanScore);
+				cmd.Set("autobanCount", account.AutobanCount);
+				cmd.Set("lastAutobanReduction", account.LastAutobanReduction);
 
 				cmd.Execute();
 			}

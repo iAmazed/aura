@@ -27,6 +27,10 @@ namespace Aura.Channel.Database
 
 		public ScriptVariables Vars { get; protected set; }
 
+		public int AutobanScore { get; set; }
+		public int AutobanCount { get; set; }
+		public DateTime LastAutobanReduction { get; set; }
+
 		public Account()
 		{
 			this.Characters = new List<Character>();
@@ -38,13 +42,15 @@ namespace Aura.Channel.Database
 
 		public PlayerCreature GetCharacterOrPet(long entityId)
 		{
-			PlayerCreature result = this.Characters.FirstOrDefault(a => a.EntityId == entityId);
-			if (result == null)
-				result = this.Pets.FirstOrDefault(a => a.EntityId == entityId);
-			return result;
+			return GetCharacter(entityId) ?? GetPet(entityId) as PlayerCreature;
 		}
 
-		public PlayerCreature GetPet(long entityId)
+		public Character GetCharacter(long entityId)
+		{
+			return this.Characters.FirstOrDefault(a => a.EntityId == entityId);
+		}
+
+		public Pet GetPet(long entityId)
 		{
 			return this.Pets.FirstOrDefault(a => a.EntityId == entityId);
 		}

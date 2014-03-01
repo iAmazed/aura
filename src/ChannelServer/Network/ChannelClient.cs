@@ -40,7 +40,7 @@ namespace Aura.Channel.Network
 		/// </summary>
 		/// <param name="id"></param>
 		/// <returns></returns>
-		public Creature GetCreature(long id)
+		public Creature GetCreature (long id)
 		{
 			Creature creature;
 			this.Creatures.TryGetValue(id, out creature);

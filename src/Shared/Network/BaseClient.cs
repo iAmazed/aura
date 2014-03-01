@@ -110,7 +110,7 @@ namespace Aura.Shared.Network
 			}
 			else
 			{
-				Log.Warning("Client got killed multiple times." + Environment.NewLine + Environment.StackTrace);
+				Log.Warning("Client got killed multiple times.{0}{1}", Environment.NewLine, Environment.StackTrace);
 			}
 		}
 

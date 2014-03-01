@@ -12,11 +12,22 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `banExpiration` datetime DEFAULT NULL,
   `banReason` varchar(255) DEFAULT NULL,
   `loggedIn` tinyint(1) NOT NULL DEFAULT '0',
+  `autobanScore` int(10) NOT NULL DEFAULT '0',
+  `autobanCount` int(10) NOT NULL DEFAULT '0',
+  `lastAutobanReduction` datetime DEFAULT NULL,
   PRIMARY KEY (`accountId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `accounts` (`accountId`, `password`, `secondaryPassword`, `sessionKey`, `authority`, `creation`, `lastLogin`, `banExpiration`, `banReason`, `loggedIn`) VALUES
 ('AuraSystem', '', NULL, 0, 0, NULL, NULL, NULL, NULL, 0);
+
+CREATE TABLE IF NOT EXISTS `autoban` (
+  `accountId` varchar(50) NOT NULL,
+  `date` datetime NOT NULL,
+  `severity` int(10) NOT NULL,
+  `report` varchar(500) NOT NULL,
+  KEY `accountId` (`accountId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `cards` (
   `cardId` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -221,6 +232,9 @@ CREATE TABLE IF NOT EXISTS `vars` (
   `value` mediumtext NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+ALTER TABLE `autoban`
+  ADD CONSTRAINT `autoban_ibfk_1` FOREIGN KEY (`accountId`) REFERENCES `accounts` (`accountId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `cards`
   ADD CONSTRAINT `cards_ibfk_2` FOREIGN KEY (`accountId`) REFERENCES `accounts` (`accountId`) ON DELETE CASCADE ON UPDATE CASCADE,
