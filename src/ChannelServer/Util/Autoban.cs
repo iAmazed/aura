@@ -47,12 +47,13 @@ namespace Aura.Channel.Util
 		/// <summary>
 		/// Used to indicate something suspicious happened, but it
 		/// *could* be nothing. This setting should be rarely used...
+		/// </summary>
 		/// <param name="report"></param>
 		/// <param name="args"></param>
-		/// </summary>
-		public void Mild(string report, params object[] args)
+		/// <returns>The exception to throw</returns>
+		public AutobanTriggeredException Mild(string report, params object[] args)
 		{
-			this.Incident(IncidentSeverityLevel.Mild, string.Format(report, args));
+			return new AutobanTriggeredException(this, IncidentSeverityLevel.Mild, string.Format(report, args));
 		}
 
 		/// <summary>
@@ -60,22 +61,24 @@ namespace Aura.Channel.Util
 		/// </summary>
 		/// <param name="report"></param>
 		/// <param name="args"></param>
-		public void Moderate(string report, params object[] args)
+		/// <returns>The exception to throw</returns>
+		public AutobanTriggeredException Moderate(string report, params object[] args)
 		{
-			this.Incident(IncidentSeverityLevel.Moderate, string.Format(report, args));
+			return new AutobanTriggeredException(this, IncidentSeverityLevel.Moderate, string.Format(report, args));
 		}
 
 		/// <summary>
 		/// Something happened that could really only be caused by a hack tool
+		/// </summary>
 		/// <param name="report"></param>
 		/// <param name="args"></param>
-		/// </summary>
-		public void Severe(string report, params object[] args)
+		/// <returns>The exception to throw</returns>
+		public AutobanTriggeredException Severe(string report, params object[] args)
 		{
-			this.Incident(IncidentSeverityLevel.Severe, string.Format(report, args));
+			return new AutobanTriggeredException(this, IncidentSeverityLevel.Severe, string.Format(report, args));
 		}
 
-		private void Incident(IncidentSeverityLevel level, string report)
+		public void Incident(IncidentSeverityLevel level, string report)
 		{
 			if (!ChannelServer.Instance.Conf.Autoban.Enabled)
 				return;
@@ -132,11 +135,20 @@ namespace Aura.Channel.Util
 	}
 
 	/// <summary>
-	/// The exception to throw whever you invoke the autoban system
+	/// The exception to throw whever you want to invoke the autoban system
 	/// </summary>
 	public class AutobanTriggeredException : Exception
 	{
+		public IncidentSeverityLevel Level { get; private set; }
+		public Autoban Autoban { get; private set; }
+		public string Report { get; private set; }
 
+		public AutobanTriggeredException(Autoban ab, IncidentSeverityLevel lvl, string report)
+		{
+			this.Autoban = ab;
+			this.Level = lvl;
+			this.Report = report;
+		}
 	}
 
 	public enum IncidentSeverityLevel

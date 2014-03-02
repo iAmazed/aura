@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Aura development team - Licensed under GNU GPL
 // For more information, see license file in the main folder
 
-using Aura.Channel.Network.Sending;
+using Aura.Channel.Util;
 using Aura.Shared.Network;
 
 namespace Aura.Channel.Network.Handlers
@@ -16,6 +16,18 @@ namespace Aura.Channel.Network.Handlers
 			{
 				//Send.ServerMessage(client.Controlling, "Unknown action.");
 				//Refresh?
+			}
+		}
+
+		public override void Handle(ChannelClient client, Packet packet)
+		{
+			try
+			{
+				base.Handle(client, packet);
+			}
+			catch (AutobanTriggeredException ex)
+			{
+				ex.Autoban.Incident(ex.Level, ex.Report);
 			}
 		}
 	}
