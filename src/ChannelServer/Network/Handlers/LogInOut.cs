@@ -4,6 +4,7 @@
 using System.Linq;
 using Aura.Channel.Database;
 using Aura.Channel.Network.Sending;
+using Aura.Channel.Util;
 using Aura.Shared.Network;
 using Aura.Shared.Util;
 using Aura.Channel.World;
@@ -107,8 +108,7 @@ namespace Aura.Channel.Network.Handlers
 			// Check permission
 			if (!creature.Warping)
 			{
-				Log.Warning("Unauthorized warp attemp from '{0}'.", creature.Name);
-				return;
+				throw new SevereAutoban(client, "Unauthorized warp attemp from '{0}'", creature.Name);
 			}
 
 			creature.Warping = false;
@@ -117,8 +117,7 @@ namespace Aura.Channel.Network.Handlers
 			var region = ChannelServer.Instance.World.GetRegion(creature.RegionId);
 			if (region == null)
 			{
-				Log.Warning("Player '{0}' tried to enter unknown region '{1}'.", creature.Name, creature.RegionId);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to enter unknown region '{1}'", creature.Name, creature.RegionId);
 			}
 
 			// Characters that spawned at least once need to be saved.

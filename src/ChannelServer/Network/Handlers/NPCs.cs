@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Aura.Channel.Util;
 using Aura.Shared.Network;
 using Aura.Shared.Util;
 using Aura.Channel.Network.Sending;
@@ -40,10 +41,7 @@ namespace Aura.Channel.Network.Handlers
 			var target = ChannelServer.Instance.World.GetNpc(npcEntityId);
 			if (target == null)
 			{
-				Send.NpcTalkStartR_Fail(creature);
-
-				Log.Warning("Creature '{0}' tried to talk to non-existing NPC '{1}'.", creature.Name, npcEntityId.ToString("X16"));
-				return;
+				throw new SevereAutoban(client, "Creature '{0}' tried to talk to non-existing NPC '{1:X16}'.", creature.Name, npcEntityId);
 			}
 
 			// Special NPCs
@@ -58,18 +56,15 @@ namespace Aura.Channel.Network.Handlers
 			// Some special NPCs require special permission.
 			if (disallow)
 			{
-				Send.NpcTalkStartR_Fail(creature);
-
-				Log.Warning("NpcTalkStart: Creature '{0}' tried to talk to NPC '{1}' without permission.", creature.Name, target.Name);
-				return;
-			}
+				throw new SevereAutoban(client, "Creature '{0}' tried to talk to NPC '{1}' without permission.", creature.Name, target.Name);
+							}
 
 			// Check script
 			if (target.Script == null)
 			{
 				Send.NpcTalkStartR_Fail(creature);
 
-				Log.Warning("NpcTalkStart: Creature '{0}' tried to talk to NPC '{1}', that doesn't have a script.", creature.Name, target.Name);
+				Log.Warning("Creature '{0}' tried to talk to NPC '{1}', that doesn't have a script.", creature.Name, target.Name);
 				return;
 			}
 
@@ -79,7 +74,7 @@ namespace Aura.Channel.Network.Handlers
 				Send.MsgBox(creature, Localization.Get("world.too_far")); // You're too far away.
 				Send.NpcTalkStartR_Fail(creature);
 
-				Log.Warning("NpcTalkStart: Creature '{0}' tried to talk to NPC '{1}' out of range.", creature.Name, target.Name);
+				Log.Warning("Creature '{0}' tried to talk to NPC '{1}' out of range.", creature.Name, target.Name);
 				return;
 			}
 
@@ -114,8 +109,7 @@ namespace Aura.Channel.Network.Handlers
 			// Check session
 			if (!client.NpcSession.IsValid(npcId))
 			{
-				Log.Warning("Player '{0}' tried ending invalid NPC session.", creature.Name);
-				//return;
+				throw new SevereAutoban(client, "Player '{0}' tried ending invalid NPC session.", creature.Name);
 			}
 
 			client.NpcSession.Clear();
@@ -145,18 +139,14 @@ namespace Aura.Channel.Network.Handlers
 			// Check session
 			if (!client.NpcSession.IsValid())
 			{
-				Log.Warning("NpcTalkSelect: Player '{0}' is in invalid session.", creature.Name);
-				Send.NpcTalkEndR(creature, client.NpcSession.Target.EntityId);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' is in invalid session.", creature.Name);
 			}
 
 			// Check result string
 			var match = Regex.Match(result, "<return type=\"string\">(?<result>[^<]*)</return>");
 			if (!match.Success)
 			{
-				Log.Warning("NpcTalkSelect: Player '{0}' sent invalid return ({1}).", creature.Name, result);
-				Send.NpcTalkEndR(creature, client.NpcSession.Target.EntityId);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' sent invalid return ({1}).", creature.Name, result);
 			}
 
 			var response = match.Groups["result"].Value;
@@ -211,17 +201,13 @@ namespace Aura.Channel.Network.Handlers
 			// Check session
 			if (!client.NpcSession.IsValid())
 			{
-				Send.NpcTalkKeywordR_Fail(character);
-				Log.Warning("NpcTalkKeyword: Player '{0}' sent a keyword without valid NPC session.", character.Name);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' sent a keyword without valid NPC session.", character.Name);
 			}
 
 			// Check keyword
 			if (!character.Keywords.Has(keyword))
 			{
-				Send.NpcTalkKeywordR_Fail(character);
-				Log.Warning("NpcTalkKeyword: Player '{0}' tried using keyword '{1}', without knowing it.", character.Name, keyword);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried using keyword '{1}', without knowing it.", character.Name, keyword);
 			}
 
 			Send.NpcTalkKeywordR(character, keyword);
@@ -249,23 +235,20 @@ namespace Aura.Channel.Network.Handlers
 			// Check session
 			if (!client.NpcSession.IsValid())
 			{
-				Log.Warning("NpcShopBuyItem: Player '{0}' is in invalid session.", creature.Name);
-				goto L_Fail;
+				throw new SevereAutoban(client, "Player '{0}' is in invalid session.", creature.Name);
 			}
 
 			// Check open shop
 			if (creature.Temp.CurrentShop == null)
 			{
-				Log.Warning("NpcShopBuyItem: Player '' tried to buy something with cur shop being null.", creature.EntityIdHex);
-				goto L_Fail;
+				throw new SevereAutoban(client, "Player '{0}' tried to buy something with current shop being null.", creature.EntityIdHex);
 			}
 
 			// Get item
 			var item = creature.Temp.CurrentShop.GetItem(entityId);
 			if (item == null)
 			{
-				Log.Warning("NpcShopBuyItem: Item '{0}' doesn't exist in shop.", entityId.ToString("X16"));
-				goto L_Fail;
+				throw new SevereAutoban(client, "Item '{0:X16}' doesn't exist in shop.", entityId);
 			}
 
 			// The client expects the price for a full stack to be sent
@@ -278,7 +261,7 @@ namespace Aura.Channel.Network.Handlers
 			if (creature.Inventory.Gold < price)
 			{
 				Send.MsgBox(creature, Localization.Get("world.shop_gold")); // Insufficient amount of gold.
-				goto L_Fail;
+				Send.NpcShopBuyItemR(creature, false);
 			}
 
 			var success = false;
@@ -294,11 +277,6 @@ namespace Aura.Channel.Network.Handlers
 				creature.Inventory.RemoveGold(price);
 
 			Send.NpcShopBuyItemR(creature, success);
-			return;
-
-		L_Fail:
-			Send.NpcShopBuyItemR(creature, false);
-			return;
 		}
 
 		/// <summary>
@@ -321,23 +299,20 @@ namespace Aura.Channel.Network.Handlers
 			// Check session
 			if (!client.NpcSession.IsValid())
 			{
-				Log.Warning("NpcShopSellItem: Player '{0}' is in invalid session.", creature.Name);
-				goto L_End;
+				throw new SevereAutoban(client, "Player '{0}' is in invalid session.", creature.Name);
 			}
 
 			// Check open shop
 			if (creature.Temp.CurrentShop == null)
 			{
-				Log.Warning("NpcShopSellItem: Player '' tried to sell something with cur shop being null.", creature.EntityIdHex);
-				goto L_End;
+				throw new SevereAutoban(client, "Player '{0}' tried to sell something with current shop being null.", creature.EntityIdHex);
 			}
 
 			// Get item
 			var item = creature.Inventory.GetItem(entityId);
 			if (item == null)
 			{
-				Log.Warning("NpcShopSellItem: Item '{0}' doesn't exist in '{1}'s inventory.", entityId.ToString("X16"), creature.Name);
-				goto L_End;
+				throw new SevereAutoban(client, "Item '{0}' doesn't exist in '{1}'s inventory.", entityId.ToString("X16"), creature.Name);
 			}
 
 			// Calculate selling price
@@ -349,29 +324,26 @@ namespace Aura.Channel.Network.Handlers
 				if (stackItemData != null)
 					sellingPrice += (int)((item.Info.Amount / (float)stackItemData.StackMax) * stackItemData.SellingPrice);
 				else
-					Log.Warning("NpcShopSellItem: Missing stack item data for '{0}'.", item.Data.StackItem);
+					Log.Warning("Missing stack item data for '{0}'.", item.Data.StackItem);
 			}
 			else if (item.Data.StackType == StackType.Stackable)
 			{
-				// Individuel price for this stack
+				// Individual price for this stack
 				sellingPrice = (int)((item.Amount / (float)item.Data.StackMax) * sellingPrice);
 			}
 
 			// Remove item from inv
 			if (!creature.Inventory.Remove(item))
 			{
-				Log.Warning("NpcShopSellItem: Failed to remove item '{0}' from '{1}'s inventory.", entityId.ToString("X16"), creature.Name);
-				goto L_End;
+				throw new SevereAutoban(client, "Failed to remove item '{0}' from '{1}'s inventory.", entityId.ToString("X16"), creature.Name);
 			}
 
 			// Add gold
 			// TODO: What if there's no space for the gold? Space check?
+			// ^ No, it just goes into the temp inv. -- Xcell
 			creature.Inventory.AddGold(sellingPrice);
 
 			ChannelServer.Instance.Events.OnPlayerRemovesItem(creature, item.Info.Id, item.Info.Amount);
-
-		L_End:
-			Send.NpcShopSellItemR(creature);
 		}
 	}
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Aura.Channel.Network.Sending;
+using Aura.Channel.Util;
 using Aura.Channel.World.Entities;
 using Aura.Data.Database;
 using Aura.Shared.Mabi.Const;
@@ -26,6 +27,40 @@ namespace Aura.Channel.World
 		private const int MaxHeight = 32;
 		private const int GoldItemId = 2000;
 		private const int GoldStackMax = 1000;
+
+		private static readonly List<Pocket> _accessiblePockets = new List<Pocket>
+		{
+			Pocket.Accessory1,
+			Pocket.Accessory2,
+			Pocket.Armor,
+			Pocket.ArmorStyle,
+			Pocket.BattleReward,
+			Pocket.Cursor,
+			Pocket.EnchantReward,
+			Pocket.Falias1,
+			Pocket.Falias2,
+			Pocket.Falias3,
+			Pocket.Falias4,
+			Pocket.Glove,
+			Pocket.GloveStyle,
+			Pocket.Head,
+			Pocket.HeadStyle,
+			Pocket.Inventory,
+			Pocket.LeftHand1,
+			Pocket.LeftHand2,
+			Pocket.Magazine1,
+			Pocket.Magazine2,
+			Pocket.PersonalInventory,
+			Pocket.RightHand1,
+			Pocket.RightHand2,
+			Pocket.Robe,
+			Pocket.RobeStyle,
+			Pocket.Shoe,
+			Pocket.ShoeStyle,
+			Pocket.Temporary,
+			Pocket.Trade,
+			Pocket.VIPInventory,
+		};
 
 		private Creature _creature;
 		private Dictionary<Pocket, InventoryPocket> _pockets;
@@ -245,6 +280,16 @@ namespace Aura.Channel.World
 
 			var source = item.Info.Pocket;
 			var amount = item.Info.Amount;
+
+			if (!_accessiblePockets.Contains(source))
+			{
+				throw new SevereAutoban(_creature.Client, "'{0}' tried to move item from inaccessible pocket {1}", source);
+			}
+
+			if (!_accessiblePockets.Contains(target) || target == Pocket.Temporary)
+			{
+				throw new SevereAutoban(_creature.Client, "'{0}' tried to move item to inaccessible pocket {1}", target);
+			}
 
 			Item collidingItem = null;
 			if (!_pockets[target].TryAdd(item, targetX, targetY, out collidingItem))

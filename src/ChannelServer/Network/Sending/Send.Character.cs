@@ -257,6 +257,8 @@ namespace Aura.Channel.Network.Sending
 		/// <param name="menu">Negative answer if null</param>
 		public static void DeadMenuR(Creature creature, CreatureDeadMenu menu)
 		{
+			if (menu == null) throw new ArgumentNullException("menu");
+
 			var packet = new Packet(Op.DeadMenuR, creature.EntityId);
 			packet.PutByte(true);
 			packet.PutString(menu.ToString());

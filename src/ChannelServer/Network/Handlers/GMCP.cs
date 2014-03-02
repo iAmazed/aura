@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Aura.Channel.Util;
 using Aura.Shared.Network;
 using Aura.Channel.Network.Sending;
 using Aura.Shared.Util;
@@ -42,8 +43,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth) // You're not authorized to use the GMCP.
 			{
-				Send.ServerMessage(creature, Localization.Get("gm.gmcp_auth"));
-				return;
+				throw new SevereAutoban(client, "'{0}' tried to use GM Summon without proper authorization", creature.Name);
 			}
 
 			var target = ChannelServer.Instance.World.GetPlayer(targetName);
@@ -75,8 +75,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth) // You're not authorized to use the GMCP.
 			{
-				Send.ServerMessage(creature, Localization.Get("gm.gmcp_auth"));
-				return;
+				throw new SevereAutoban(client, "'{0}' tried to use GM Move To without proper authorization", creature.Name);
 			}
 
 			var target = ChannelServer.Instance.World.GetCreature(targetName);
@@ -108,8 +107,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth)
 			{
-				Send.ServerMessage(creature, Localization.Get("gm.gmcp_auth")); // You're not authorized to use the GMCP.
-				return;
+				throw new SevereAutoban(client, "'{0}' tried to use GM Minimap Warp without proper authorization", creature.Name);
 			}
 
 			creature.Warp(regionId, x, y);
@@ -129,8 +127,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth)
 			{
-				Send.ServerMessage(creature, Localization.Get("gm.gmcp_auth")); // You're not authorized to use the GMCP.
-				return;
+				throw new SevereAutoban(client, "'{0}' tried to use GM Revive without proper authorization", creature.Name);
 			}
 
 			creature.FullHeal();
@@ -153,8 +150,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth)
 			{
-				Send.ServerMessage(creature, Localization.Get("gm.gmcp_auth")); // You're not authorized to use the GMCP.
-				return;
+				throw new SevereAutoban(client, "'{0}' tried to use GM Invisibility without proper authorization", creature.Name);
 			}
 
 			if (activate)
@@ -181,8 +177,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth) // You're not authorized to use the GMCP.
 			{
-				Send.ServerMessage(creature, Localization.Get("gm.gmcp_auth"));
-				return;
+				throw new SevereAutoban(client, "'{0}' tried to use GM Expel without proper authorization", creature.Name);
 			}
 
 			var target = ChannelServer.Instance.World.GetPlayer(targetName);
@@ -216,8 +211,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth) // You're not authorized to use the GMCP.
 			{
-				Send.ServerMessage(creature, Localization.Get("gm.gmcp_auth"));
-				return;
+				throw new SevereAutoban(client, "'{0}' tried to use GM Ban without proper authorization", creature.Name);
 			}
 
 			var target = ChannelServer.Instance.World.GetPlayer(targetName);
@@ -256,8 +250,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth) // You're not authorized to use the GMCP.
 			{
-				Send.ServerMessage(creature, Localization.Get("gm.gmcp_auth"));
-				return;
+				throw new SevereAutoban(client, "'{0}' tried to use GM Npc List without proper authorization", creature.Name);
 			}
 
 			var npcs = ChannelServer.Instance.World.GetAllGoodNpcs();

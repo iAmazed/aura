@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Aura.Channel.Util;
 using Aura.Shared.Network;
 using Aura.Channel.Network.Sending;
 using Aura.Shared.Util;
@@ -32,10 +33,10 @@ namespace Aura.Channel.Network.Handlers
 			if (creature == null)
 				return;
 
-			var titleSuccess = creature.Titles.ChangeTitle(titleId, false);
-			var optionSuccess = creature.Titles.ChangeTitle(optionTitleId, true);
+			creature.Titles.ChangeTitle(titleId, false);
+			creature.Titles.ChangeTitle(optionTitleId, true);
 
-			Send.ChangeTitleR(creature, titleSuccess, optionSuccess);
+			Send.ChangeTitleR(creature, true, true);
 		}
 
 		/// <summary>
@@ -56,8 +57,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (!creature.IsDead)
 			{
-				Send.DeadMenuR(creature, null);
-				return;
+				throw new ModerateAutoban(client, "'{0}' tried to access the dead menu when they were not dead.", creature.Name);
 			}
 
 			// ...

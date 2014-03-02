@@ -5,6 +5,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Aura.Channel.Database;
 using Aura.Channel.Scripting;
+using Aura.Channel.Util;
 using Aura.Channel.World.Entities;
 using Aura.Shared.Network;
 
@@ -13,6 +14,8 @@ namespace Aura.Channel.Network
 	public class ChannelClient : Client
 	{
 		public Account Account { get; set; }
+
+		public Autoban Autoban { get; private set; }
 
 		/// <summary>
 		/// Main creature this client controls.
@@ -33,6 +36,7 @@ namespace Aura.Channel.Network
 		{
 			this.Creatures = new Dictionary<long, Creature>();
 			this.NpcSession = new NpcSession();
+			this.Autoban = new Autoban(this);
 		}
 
 		/// <summary>
@@ -40,11 +44,13 @@ namespace Aura.Channel.Network
 		/// </summary>
 		/// <param name="id"></param>
 		/// <returns></returns>
-		public Creature GetCreature (long id)
+		public Creature GetCreature(long id)
 		{
 			Creature creature;
-			this.Creatures.TryGetValue(id, out creature);
-			return creature;
+			if (this.Creatures.TryGetValue(id, out creature))
+				return creature;
+
+			throw new SevereAutoban(this, "Tried to get nonexisting creature {0:X}", id);
 		}
 
 		/// <summary>

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using Aura.Channel.Network.Sending;
+using Aura.Channel.Util;
 using Aura.Data;
 using Aura.Shared.Util;
 using Aura.Data.Database;
@@ -145,20 +146,19 @@ namespace Aura.Channel.World.Entities.Creatures
 		}
 
 		/// <summary>
-		/// Tries to change title, returns false if anything goes wrong.
+		/// Tries to change title, throws Autoban exception if anything goes wrong
 		/// </summary>
 		/// <param name="titleId"></param>
 		/// <returns></returns>
-		public bool ChangeTitle(ushort titleId, bool option)
+		public void ChangeTitle(ushort titleId, bool option)
 		{
 			if (titleId == 0 && this.GetTitle(option) == 0)
-				return true;
+				return;
 
 			if (titleId != 0 && !this.IsUsable(titleId))
 			{
 				this.SetTitle(0, option);
-				Log.Warning("Player '{0}' tried to use disabled title '{1}'.", _creature.Name, titleId);
-				return false;
+				throw new ModerateAutoban(_creature.Client, "Player '{0}' tried to use disabled title '{1}'.", _creature.Name, titleId);
 			}
 
 			TitleData data = null;
@@ -168,8 +168,7 @@ namespace Aura.Channel.World.Entities.Creatures
 				if (data == null)
 				{
 					this.SetTitle(0, option);
-					Log.Warning("Player '{0}' tried to use unknown title '{1}'.", _creature.Name, titleId);
-					return false;
+					throw new ModerateAutoban(_creature.Client, "Player '{0}' tried to use unknown title '{1}'.", _creature.Name, titleId);
 				}
 			}
 
@@ -178,14 +177,13 @@ namespace Aura.Channel.World.Entities.Creatures
 
 			if (_creature.Region != null)
 				Send.TitleUpdate(_creature);
-
-			return true;
 		}
 
 		/// <summary>
 		/// Removes previous stat mods and adds new ones.
 		/// </summary>
 		/// <param name="data"></param>
+		/// <param name="option"></param>
 		private void SwitchStatMods(TitleData data, bool option)
 		{
 			// Remove prev stat mods

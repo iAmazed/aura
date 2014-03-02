@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Aura.Channel.Util;
 using Aura.Shared.Network;
 using Aura.Channel.Network.Sending;
 
@@ -27,14 +28,12 @@ namespace Aura.Channel.Network.Handlers
 			if (creature == null) return;
 
 			var quest = creature.Quests.Get(uniqueQuestId);
-			if (quest == null || !quest.IsDone) goto L_Fail;
+			if (quest == null || !quest.IsDone)
+				throw new SevereAutoban(client, "'{0}' attempted to complete an already-finished quest.", creature.Name);
 
-			if (!creature.Quests.Complete(quest)) goto L_Fail;
+			if (creature.Quests.Complete(quest))
+				Send.CompleteQuestR(creature, true);
 
-			Send.CompleteQuestR(creature, true);
-			return;
-
-		L_Fail:
 			Send.CompleteQuestR(creature, false);
 		}
 

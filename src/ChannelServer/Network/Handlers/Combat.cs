@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Aura.Channel.Util;
 using Aura.Shared.Network;
 using Aura.Channel.Network.Sending;
 using Aura.Shared.Util;
@@ -78,10 +79,7 @@ namespace Aura.Channel.Network.Handlers
 			Creature target = null;
 			if (targetEntityId != 0 && (target = creature.Region.GetCreature(targetEntityId)) == null)
 			{
-				Log.Warning("Creature '{0}' targetted invalid entity '{1}'.", creature.Name, targetEntityId.ToString("X16"));
-				Send.Notice(creature, "Invalid target");
-				Send.SetCombatTarget(creature, 0, 0);
-				return;
+				throw new ModerateAutoban(client, "Creature '{0}' targeted invalid entity '{1:X16}'.", creature.Name, targetEntityId);
 			}
 
 			creature.Target = target;

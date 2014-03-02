@@ -44,40 +44,6 @@ namespace Aura.Channel.Util
 			_client = client;
 		}
 
-		/// <summary>
-		/// Used to indicate something suspicious happened, but it
-		/// *could* be nothing. This setting should be rarely used...
-		/// </summary>
-		/// <param name="report"></param>
-		/// <param name="args"></param>
-		/// <returns>The exception to throw</returns>
-		public AutobanTriggeredException Mild(string report, params object[] args)
-		{
-			return new AutobanTriggeredException(this, IncidentSeverityLevel.Mild, string.Format(report, args));
-		}
-
-		/// <summary>
-		/// Something that is a strong indicator for a hack, but not certain.
-		/// </summary>
-		/// <param name="report"></param>
-		/// <param name="args"></param>
-		/// <returns>The exception to throw</returns>
-		public AutobanTriggeredException Moderate(string report, params object[] args)
-		{
-			return new AutobanTriggeredException(this, IncidentSeverityLevel.Moderate, string.Format(report, args));
-		}
-
-		/// <summary>
-		/// Something happened that could really only be caused by a hack tool
-		/// </summary>
-		/// <param name="report"></param>
-		/// <param name="args"></param>
-		/// <returns>The exception to throw</returns>
-		public AutobanTriggeredException Severe(string report, params object[] args)
-		{
-			return new AutobanTriggeredException(this, IncidentSeverityLevel.Severe, string.Format(report, args));
-		}
-
 		public void Incident(IncidentSeverityLevel level, string report)
 		{
 			if (!ChannelServer.Instance.Conf.Autoban.Enabled)
@@ -137,7 +103,7 @@ namespace Aura.Channel.Util
 	/// <summary>
 	/// The exception to throw whever you want to invoke the autoban system
 	/// </summary>
-	public class AutobanTriggeredException : Exception
+	public abstract class AutobanTriggeredException : Exception
 	{
 		public IncidentSeverityLevel Level { get; private set; }
 		public Autoban Autoban { get; private set; }
@@ -148,6 +114,46 @@ namespace Aura.Channel.Util
 			this.Autoban = ab;
 			this.Level = lvl;
 			this.Report = report;
+		}
+	}
+
+	/// <summary>
+	/// Used to indicate something suspicious happened, but it
+	/// *could* be nothing. This setting should be rarely used...
+	/// </summary>
+	public class MildAutoban: AutobanTriggeredException
+	{
+		public MildAutoban(ChannelClient client, string report, params object[] args)
+			: base(client.Autoban,  IncidentSeverityLevel.Mild,
+				new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().Name + ": " + string.Format(report, args))
+		{
+
+		}
+	}
+
+	/// <summary>
+	/// Something that is a strong indicator for a hack, but not certain.
+	/// </summary>
+	public class ModerateAutoban: AutobanTriggeredException
+	{
+		public ModerateAutoban(ChannelClient client, string report, params object[] args)
+			: base(client.Autoban,  IncidentSeverityLevel.Moderate,
+				new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().Name + ": " + string.Format(report, args))
+		{
+
+		}
+	}
+
+	/// <summary>
+	/// Something happened that could really only be caused by a hack tool
+	/// </summary>
+	public class SevereAutoban: AutobanTriggeredException
+	{
+		public SevereAutoban(ChannelClient client, string report, params object[] args)
+			: base(client.Autoban,  IncidentSeverityLevel.Severe,
+				new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().Name + ": " + string.Format(report, args))
+		{
+
 		}
 	}
 

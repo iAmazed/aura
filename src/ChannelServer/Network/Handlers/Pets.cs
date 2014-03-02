@@ -2,6 +2,7 @@
 // For more information, see license file in the main folder
 
 using Aura.Channel.Network.Sending;
+using Aura.Channel.Util;
 using Aura.Shared.Network;
 using Aura.Shared.Util;
 using Aura.Channel.World;
@@ -30,17 +31,13 @@ namespace Aura.Channel.Network.Handlers
 
 			if (creature.Pet != null)
 			{
-				Log.Warning("SummonPet: Player '{0}' tried to spawn multiple pets.", client.Account.Id);
-				Send.SummonPetR(creature, null);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to spawn multiple pets.", client.Account.Id);
 			}
 
 			var pet = client.Account.GetPet(entityId);
 			if (pet == null)
 			{
-				Log.Warning("SummonPet: Failed to get pet '{0}', for '{1}'.", entityId.ToString("X16"), client.Account.Id);
-				Send.SummonPetR(creature, null);
-				return;
+				throw new SevereAutoban(client, "Failed to get pet '{0:X16}', for '{1}'.", client.Account.Id);
 			}
 
 			// Doesn't fix giant mount problems.
@@ -81,9 +78,7 @@ namespace Aura.Channel.Network.Handlers
 			var pet = creature.Pet;
 			if (pet == null || pet.EntityId != entityId)
 			{
-				Log.Warning("Player '{0}' tried to unsummon invalid pet.", client.Account.Id);
-				Send.UnsummonPetR(creature, false, entityId);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to unsummon invalid pet.", client.Account.Id);
 			}
 
 			client.Creatures.Remove(pet.EntityId);
@@ -154,9 +149,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (pet.Master.RegionId != pet.RegionId)
 			{
-				Log.Warning("Illegal pet teleport by '{0}'.", packet.Id.ToString("X16"));
-				Send.TelePetR(pet, false);
-				return;
+				throw new SevereAutoban(client, "Illegal pet teleport by '{0:X16}'.", packet.Id);
 			}
 
 			pet.Warp(pet.RegionId, x, y);
@@ -197,29 +190,24 @@ namespace Aura.Channel.Network.Handlers
 			var pet = client.GetCreature(petEntityId);
 			if (pet == null || pet.Master == null)
 			{
-				Log.Warning("Player '{0}' tried to move item to invalid pet.", creature.Name);
-				Send.PutItemIntoPetInvR(creature, false);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to move item to invalid pet.", creature.Name);
 			}
 
 			// Get item
 			var item = creature.Inventory.GetItem(itemEntityId);
 			if (item == null)
 			{
-				Log.Warning("Player '{0}' tried to move invalid item to pet.", creature.Name);
-				Send.PutItemIntoPetInvR(creature, false);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to move invalid item to pet.", creature.Name);
 			}
 
 			// Check pocket
 			if (pocket != Pocket.Inventory)
 			{
-				Log.Warning("Player '{0}' tried to move item to invalid pocket '{1}'.", creature.Name, pocket);
-				Send.PutItemIntoPetInvR(creature, false);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to move item to invalid pocket '{1}'.", creature.Name, pocket);
 			}
 
 			// Try move
+			// TODO: This item cannot be stored in the inventory of a summoned creature
 			if (!creature.Inventory.MovePet(item, pet, pocket, x, y))
 			{
 				Log.Warning("PutItemIntoPetInv: Moving item failed.");
@@ -252,18 +240,14 @@ namespace Aura.Channel.Network.Handlers
 			var pet = client.GetCreature(petEntityId);
 			if (pet == null || pet.Master == null)
 			{
-				Log.Warning("Player '{0}' tried to move item from invalid pet.", creature.Name);
-				Send.TakeItemFromPetInvR(creature, false);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to move item from invalid pet.", creature.Name);
 			}
 
 			// Get item
 			var item = pet.Inventory.GetItem(itemEntityId);
 			if (item == null)
 			{
-				Log.Warning("Player '{0}' tried to move invalid item from pet.", creature.Name);
-				Send.TakeItemFromPetInvR(creature, false);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to move invalid item from pet.", creature.Name);
 			}
 
 			// Try move

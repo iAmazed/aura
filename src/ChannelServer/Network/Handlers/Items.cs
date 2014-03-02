@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Aura.Channel.Util;
 using Aura.Shared.Network;
 using Aura.Channel.Network.Sending;
 using Aura.Shared.Util;
@@ -38,7 +39,13 @@ namespace Aura.Channel.Network.Handlers
 				return;
 
 			var item = creature.Inventory.GetItem(entityId);
-			if (item == null || item.Data.Type == ItemType.Hair || item.Data.Type == ItemType.Face)
+			if (item == null)
+			{
+				throw new SevereAutoban(client, "'{0}' tried to move nonexisting item {1:X16}", creature.Name, entityId);
+			}
+
+			// Try to move item
+			if (!creature.Inventory.Move(item, target, targetX, targetY))
 			{
 				Send.ItemMoveR(creature, false);
 				return;
@@ -47,13 +54,6 @@ namespace Aura.Channel.Network.Handlers
 			// Stop moving when changing weapons
 			if ((target >= Pocket.RightHand1 && target <= Pocket.Magazine2) || (source >= Pocket.RightHand1 && source <= Pocket.Magazine2))
 				creature.StopMove();
-
-			// Try to move item
-			if (!creature.Inventory.Move(item, target, targetX, targetY))
-			{
-				Send.ItemMoveR(creature, false);
-				return;
-			}
 
 			Send.ItemMoveR(creature, true);
 		}
@@ -265,7 +265,7 @@ namespace Aura.Channel.Network.Handlers
 			// This might not be entirely correct, but works well.
 			// Robe is opened first, Helm secondly, then Robe and Helm are both closed.
 
-			foreach (var target in new Pocket[] { firstTarget, secondTarget })
+			foreach (var target in new [] { firstTarget, secondTarget })
 			{
 				if (target > 0)
 				{

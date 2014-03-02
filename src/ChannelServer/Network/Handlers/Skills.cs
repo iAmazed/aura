@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Aura.Channel.Util;
 using Aura.Shared.Network;
 using Aura.Channel.Network.Sending;
 using Aura.Shared.Util;
@@ -82,9 +83,7 @@ namespace Aura.Channel.Network.Handlers
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
 			{
-				Log.Warning("SkillStart: Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
-				Send.SkillStartSilentCancel(creature, skillId);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to use skill '{1}', which they don't have.", creature.Name, skillId);
 			}
 
 			var handler = ChannelServer.Instance.SkillManager.GetHandler<IStartable>(skillId);
@@ -186,9 +185,7 @@ namespace Aura.Channel.Network.Handlers
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
 			{
-				Log.Warning("SkillPrepare: Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
-				Send.SkillPrepareSilentCancel(creature, skillId);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
 			}
 
 			var handler = ChannelServer.Instance.SkillManager.GetHandler<IPreparable>(skillId);
@@ -231,9 +228,7 @@ namespace Aura.Channel.Network.Handlers
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
 			{
-				Log.Warning("SkillReady: Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
-				// Cancel?
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
 			}
 
 			var handler = ChannelServer.Instance.SkillManager.GetHandler<IReadyable>(skillId);
@@ -279,9 +274,7 @@ namespace Aura.Channel.Network.Handlers
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
 			{
-				Log.Warning("SkillUse: Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
-				Send.SkillUseSilentCancel(creature);
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
 			}
 
 			var handler = ChannelServer.Instance.SkillManager.GetHandler<IUseable>(skillId);
@@ -327,9 +320,7 @@ namespace Aura.Channel.Network.Handlers
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
 			{
-				Log.Warning("SkillComplete: Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
-				// Cancel?
-				return;
+				throw new SevereAutoban(client, "Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
 			}
 
 			var handler = ChannelServer.Instance.SkillManager.GetHandler<ICompletable>(skillId);
