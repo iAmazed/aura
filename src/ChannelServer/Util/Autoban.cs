@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Aura.Channel.Database;
+﻿using Aura.Channel.Database;
 using Aura.Channel.Network;
 using Aura.Shared.Util;
+using System;
 
 namespace Aura.Channel.Util
 {
@@ -52,28 +48,31 @@ namespace Aura.Channel.Util
 		/// Used to indicate something suspicious happened, but it
 		/// *could* be nothing. This setting should be rarely used...
 		/// <param name="report"></param>
+		/// <param name="args"></param>
 		/// </summary>
-		public void Mild(string report)
+		public void Mild(string report, params object[] args)
 		{
-			this.Incident(IncidentSeverityLevel.Mild, report);
+			this.Incident(IncidentSeverityLevel.Mild, string.Format(report, args));
 		}
 
 		/// <summary>
 		/// Something that is a strong indicator for a hack, but not certain.
 		/// </summary>
 		/// <param name="report"></param>
-		public void Moderate(string report)
+		/// <param name="args"></param>
+		public void Moderate(string report, params object[] args)
 		{
-			this.Incident(IncidentSeverityLevel.Moderate, report);
+			this.Incident(IncidentSeverityLevel.Moderate, string.Format(report, args));
 		}
 
 		/// <summary>
 		/// Something happened that could really only be caused by a hack tool
 		/// <param name="report"></param>
+		/// <param name="args"></param>
 		/// </summary>
-		public void Severe(string report)
+		public void Severe(string report, params object[] args)
 		{
-			this.Incident(IncidentSeverityLevel.Severe, report);
+			this.Incident(IncidentSeverityLevel.Severe, string.Format(report, args));
 		}
 
 		private void Incident(IncidentSeverityLevel level, string report)
@@ -97,8 +96,8 @@ namespace Aura.Channel.Util
 
 			if (Score >= ChannelServer.Instance.Conf.Autoban.BanAt)
 				this.Ban();
-			else if (level >= ChannelServer.Instance.Conf.Autoban.KillLevel)
-				_client.Kill();
+
+			_client.Kill();
 		}
 
 		private void Ban()
@@ -129,9 +128,15 @@ namespace Aura.Channel.Util
 
 			if (ChannelServer.Instance.Conf.Autoban.ResetScoreOnBan)
 				Score = 0;
-
-			_client.Kill();
 		}
+	}
+
+	/// <summary>
+	/// The exception to throw whever you invoke the autoban system
+	/// </summary>
+	public class AutobanTriggeredException : Exception
+	{
+
 	}
 
 	public enum IncidentSeverityLevel

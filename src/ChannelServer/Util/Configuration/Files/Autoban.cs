@@ -14,11 +14,6 @@ namespace Aura.Channel.Util.Configuration.Files
 		public bool Enabled;
 
 		/// <summary>
-		/// The incident level at which the client is killed immediatly
-		/// </summary>
-		public IncidentSeverityLevel KillLevel;
-		
-		/// <summary>
 		/// The ban threshold. When a player's score is greater than
 		/// or equal to this number, they're banned.
 		/// </summary>
@@ -78,7 +73,6 @@ namespace Aura.Channel.Util.Configuration.Files
 			this.Require("system/conf/autoban.conf");
 
 			Enabled = this.GetBool("enabled", true);
-			KillLevel = this.GetEnum("kill_level", IncidentSeverityLevel.Moderate);
 			BanAt = this.GetInt("ban_at", 10);
 			MildAmount = this.GetInt("mild_amount", 1);
 			ModerateAmount = this.GetInt("moderate_amount", 5);
