@@ -30,8 +30,6 @@ namespace Aura.Channel.Network.Handlers
 			var stance = (BattleStance)packet.GetByte();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			if (stance > BattleStance.Ready)
 			{
@@ -72,8 +70,6 @@ namespace Aura.Channel.Network.Handlers
 			var unkString = packet.GetString();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			// Id == 0 means untargetting, go with the null
 			Creature target = null;
@@ -109,8 +105,6 @@ namespace Aura.Channel.Network.Handlers
 			var unkString = packet.GetString();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			// Check target
 			var target = creature.Region.GetCreature(targetEntityId);

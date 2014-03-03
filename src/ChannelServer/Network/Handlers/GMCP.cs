@@ -39,7 +39,6 @@ namespace Aura.Channel.Network.Handlers
 			var targetName = packet.GetString();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth) // You're not authorized to use the GMCP.
 			{
@@ -71,7 +70,6 @@ namespace Aura.Channel.Network.Handlers
 			var targetName = packet.GetString();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth) // You're not authorized to use the GMCP.
 			{
@@ -103,7 +101,6 @@ namespace Aura.Channel.Network.Handlers
 			var y = packet.GetInt();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth)
 			{
@@ -123,7 +120,7 @@ namespace Aura.Channel.Network.Handlers
 		public void GmcpRevive(ChannelClient client, Packet packet)
 		{
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null || !creature.IsDead) return;
+			if (!creature.IsDead) return;
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth)
 			{
@@ -146,7 +143,6 @@ namespace Aura.Channel.Network.Handlers
 			var activate = packet.GetBool();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth)
 			{
@@ -173,7 +169,6 @@ namespace Aura.Channel.Network.Handlers
 			var targetName = packet.GetString();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth) // You're not authorized to use the GMCP.
 			{
@@ -207,7 +202,6 @@ namespace Aura.Channel.Network.Handlers
 			var reason = packet.GetString();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth) // You're not authorized to use the GMCP.
 			{
@@ -246,7 +240,6 @@ namespace Aura.Channel.Network.Handlers
 		public void GmcpNpcList(ChannelClient client, Packet packet)
 		{
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth) // You're not authorized to use the GMCP.
 			{

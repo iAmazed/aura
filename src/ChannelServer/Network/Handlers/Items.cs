@@ -35,8 +35,6 @@ namespace Aura.Channel.Network.Handlers
 			var targetY = packet.GetByte();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var item = creature.Inventory.GetItem(entityId);
 			if (item == null)
@@ -71,8 +69,8 @@ namespace Aura.Channel.Network.Handlers
 			var unk = packet.GetByte();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null || creature.Region == null)
-				return;
+			if (creature.Region == null)
+				return; // TODO: Autoban?
 
 			var item = creature.Inventory.GetItem(entityId);
 			if (item == null || item.Data.Type == ItemType.Hair || item.Data.Type == ItemType.Face)
@@ -110,8 +108,8 @@ namespace Aura.Channel.Network.Handlers
 			var entityId = packet.GetLong();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null || creature.Region == null)
-				return;
+			if (creature.Region == null)
+				return; // TODO: Autoban?
 
 			var item = creature.Region.GetItem(entityId);
 			if (item == null)
@@ -139,8 +137,6 @@ namespace Aura.Channel.Network.Handlers
 			var itemId = packet.GetLong();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var item = creature.Inventory.GetItem(itemId);
 			if (item == null || item.Data.Type == ItemType.Hair || item.Data.Type == ItemType.Face)
@@ -175,8 +171,6 @@ namespace Aura.Channel.Network.Handlers
 			var unk1 = packet.GetByte();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			// Check item
 			var item = creature.Inventory.GetItem(itemId);
@@ -232,8 +226,6 @@ namespace Aura.Channel.Network.Handlers
 			var set = (WeaponSet)packet.GetByte();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			creature.StopMove();
 
@@ -259,8 +251,6 @@ namespace Aura.Channel.Network.Handlers
 			var unk = packet.GetByte();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			// This might not be entirely correct, but works well.
 			// Robe is opened first, Helm secondly, then Robe and Helm are both closed.
@@ -298,8 +288,6 @@ namespace Aura.Channel.Network.Handlers
 			var entityId = packet.GetLong();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			// Check states
 			if (creature.IsDead)

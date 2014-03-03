@@ -28,8 +28,6 @@ namespace Aura.Channel.Network.Handlers
 			var y = packet.GetInt();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var from = creature.GetPosition();
 			var to = new Position(x, y);
@@ -65,8 +63,6 @@ namespace Aura.Channel.Network.Handlers
 			var unkString = packet.GetString();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			// Do something with this information?
 		}

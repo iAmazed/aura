@@ -28,7 +28,6 @@ namespace Aura.Channel.Network.Handlers
 			var skillId = (SkillId)packet.GetUShort();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null || !skill.IsRankable) goto L_Fail;
@@ -77,8 +76,6 @@ namespace Aura.Channel.Network.Handlers
 			var skillId = (SkillId)packet.GetUShort();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -129,8 +126,6 @@ namespace Aura.Channel.Network.Handlers
 			var skillId = (SkillId)packet.GetUShort();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -179,8 +174,6 @@ namespace Aura.Channel.Network.Handlers
 			var skillId = (SkillId)packet.GetUShort();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -222,8 +215,6 @@ namespace Aura.Channel.Network.Handlers
 			var skillId = (SkillId)packet.GetUShort();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -268,8 +259,6 @@ namespace Aura.Channel.Network.Handlers
 			var skillId = (SkillId)packet.GetUShort();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -314,8 +303,6 @@ namespace Aura.Channel.Network.Handlers
 			var skillId = (SkillId)packet.GetUShort();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -361,8 +348,6 @@ namespace Aura.Channel.Network.Handlers
 			var unkByte2 = packet.GetByte();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			creature.Skills.CancelActiveSkill();
 		}

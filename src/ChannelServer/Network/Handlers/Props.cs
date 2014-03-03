@@ -22,8 +22,8 @@ namespace Aura.Channel.Network.Handlers
 
 			// Check creature and region
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null || creature.Region == null || creature.IsDead)
-				return;
+			if ( creature.Region == null || creature.IsDead)
+				return; // TODO: Autoban?
 
 			// Check prop
 			var prop = creature.Region.GetProp(entityId);
@@ -73,8 +73,8 @@ namespace Aura.Channel.Network.Handlers
 
 			// Check creature and region
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null || creature.Region == null || creature.IsDead)
-				return;
+			if (creature.Region == null || creature.IsDead)
+				return; // TODO: Autoban?
 
 			// Check prop
 			var prop = creature.Region.GetProp(entityId);

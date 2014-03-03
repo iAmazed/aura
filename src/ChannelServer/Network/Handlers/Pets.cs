@@ -26,8 +26,6 @@ namespace Aura.Channel.Network.Handlers
 			var unkByte = packet.GetByte();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			if (creature.Pet != null)
 			{
@@ -72,8 +70,6 @@ namespace Aura.Channel.Network.Handlers
 			var entityId = packet.GetLong();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var pet = creature.Pet;
 			if (pet == null || pet.EntityId != entityId)
@@ -115,8 +111,6 @@ namespace Aura.Channel.Network.Handlers
 			var action = (PetAction)packet.GetByte();
 
 			var pet = client.GetCreature(packet.Id);
-			if (pet == null)
-				return;
 
 			//Send.Chat(pet, "...");
 
@@ -144,8 +138,8 @@ namespace Aura.Channel.Network.Handlers
 			var y = packet.GetInt();
 
 			var pet = client.GetCreature(packet.Id);
-			if (pet == null || pet.Master == null)
-				return;
+			if (pet.Master == null)
+				return; // TODO: Autoban?
 
 			if (pet.Master.RegionId != pet.RegionId)
 			{
@@ -183,12 +177,10 @@ namespace Aura.Channel.Network.Handlers
 
 			// Get creature
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			// Get pet
 			var pet = client.GetCreature(petEntityId);
-			if (pet == null || pet.Master == null)
+			if (pet.Master == null)
 			{
 				throw new SevereAutoban(client, "Player '{0}' tried to move item to invalid pet.", creature.Name);
 			}
@@ -233,12 +225,10 @@ namespace Aura.Channel.Network.Handlers
 
 			// Get creature
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			// Get pet
 			var pet = client.GetCreature(petEntityId);
-			if (pet == null || pet.Master == null)
+			if (pet.Master == null)
 			{
 				throw new SevereAutoban(client, "Player '{0}' tried to move item from invalid pet.", creature.Name);
 			}
@@ -273,12 +263,10 @@ namespace Aura.Channel.Network.Handlers
 			var mountEntityId = packet.GetLong();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			var mount = client.GetCreature(mountEntityId);
-			if (mount == null || mount == creature)
-				return;
+			if (mount == creature)
+				return; // TODO: Autoban?
 
 			// ...
 
@@ -296,8 +284,6 @@ namespace Aura.Channel.Network.Handlers
 		public void PetUnmount(ChannelClient client, Packet packet)
 		{
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			// ...
 
@@ -322,8 +308,6 @@ namespace Aura.Channel.Network.Handlers
 			var ai = packet.GetString();
 
 			var pet = client.GetCreature(packet.Id);
-			if (pet == null)
-				return;
 
 			pet.Vars.Perm.PetAI = ai;
 		}
@@ -338,8 +322,6 @@ namespace Aura.Channel.Network.Handlers
 		public void GetPetAi(ChannelClient client, Packet packet)
 		{
 			var pet = client.GetCreature(packet.Id);
-			if (pet == null)
-				return;
 
 			// Send back AI, default to OasisRulePassive on null.
 			Send.GetPetAiR(pet, pet.Vars.Perm.PetAI ?? "OasisRulePassive.xml");

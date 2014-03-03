@@ -20,8 +20,6 @@ namespace Aura.Channel.Network.Handlers
 			var message = packet.GetString();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			// Don't send message if it's a valid command
 			if (ChannelServer.Instance.CommandProcessor.Process(client, creature, message))

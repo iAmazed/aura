@@ -30,8 +30,6 @@ namespace Aura.Channel.Network.Handlers
 			var optionTitleId = packet.GetUShort();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null)
-				return;
 
 			creature.Titles.ChangeTitle(titleId, false);
 			creature.Titles.ChangeTitle(optionTitleId, true);
@@ -53,7 +51,6 @@ namespace Aura.Channel.Network.Handlers
 		public void DeadMenu(ChannelClient client, Packet packet)
 		{
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			if (!creature.IsDead)
 			{
@@ -84,7 +81,6 @@ namespace Aura.Channel.Network.Handlers
 			var option = (ReviveOptions)(1 << (packet.GetInt() - 1));
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			if (!creature.IsDead)
 			{

@@ -25,7 +25,6 @@ namespace Aura.Channel.Network.Handlers
 			var uniqueQuestId = packet.GetLong();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			var quest = creature.Quests.Get(uniqueQuestId);
 			if (quest == null || !quest.IsDone)
@@ -49,7 +48,6 @@ namespace Aura.Channel.Network.Handlers
 			var uniqueQuestId = packet.GetLong();
 
 			var creature = client.GetCreature(packet.Id);
-			if (creature == null) return;
 
 			var quest = creature.Quests.Get(uniqueQuestId);
 			if (quest == null) goto L_Fail;
