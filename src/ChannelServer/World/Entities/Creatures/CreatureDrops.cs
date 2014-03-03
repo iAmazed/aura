@@ -12,7 +12,7 @@ namespace Aura.Channel.World.Entities.Creatures
 {
 	public class CreatureDrops
 	{
-		public static int[,] MaxGoldPattern = new int[,] { 
+		public static int[,] MaxGoldPattern = { 
 			            {-50,100},  {0,100},  {50,100},
 			{-100,50},  {-50,50},   {0,50},   {50,50},   {100,50},
 			{-100,0},   {-50,0},    {0,0},    {50,0},    {100,0},

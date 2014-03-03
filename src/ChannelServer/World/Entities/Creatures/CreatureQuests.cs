@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Aura.Channel.Util;
 using Aura.Channel.World.Quests;
 using Aura.Channel.Network.Sending;
 using Aura.Shared.Util;
@@ -47,10 +48,13 @@ namespace Aura.Channel.World.Entities.Creatures
 
 		/// <summary>
 		/// Returns quest or null.
+		/// 
+		/// WARNING:  This unsafe method does NOT verify the quest exists
+		/// and may return null. It also does not invoke Autoban.
 		/// </summary>
 		/// <param name="questId"></param>
 		/// <returns></returns>
-		public Quest Get(int questId)
+		public Quest GetUnsafe(int questId)
 		{
 			Quest result;
 			lock (_quests)
@@ -59,14 +63,53 @@ namespace Aura.Channel.World.Entities.Creatures
 		}
 
 		/// <summary>
+		/// Returns quest. Throws autoban exception if the quest does not exist.
+		/// 
+		/// Will NEVER return null
+		/// </summary>
+		/// <param name="questId"></param>
+		/// <exception cref="AutobanTriggeredException">Thrown if the quest does not exist.</exception>
+		/// <returns></returns>
+		public Quest Get(int questId)
+		{
+			var q = this.GetUnsafe(questId);
+			if (q == null)
+				throw new SevereAutoban(_creature.Client, "{0} attempted to get a quest that they do not have",
+					_creature.EntityIdHex);
+
+			return q;
+		}
+
+		/// <summary>
 		/// Returns quest or null.
+		/// 
+		/// WARNING:  This unsafe method does NOT verify the quest exists
+		/// and may return null. It also does not invoke Autoban.
 		/// </summary>
 		/// <param name="uniqueId"></param>
 		/// <returns></returns>
-		public Quest Get(long uniqueId)
+		public Quest GetUnsafe(long uniqueId)
 		{
 			lock (_quests)
 				return _quests.Values.FirstOrDefault(a => a.UniqueId == uniqueId);
+		}
+
+		/// <summary>
+		/// Returns quest. Throws autoban exception if the quest does not exist.
+		/// 
+		/// Will NEVER return null
+		/// </summary>
+		/// <param name="uniqueId"></param>
+		/// <exception cref="AutobanTriggeredException">Thrown if the quest does not exist.</exception>
+		/// <returns></returns>
+		public Quest Get(long uniqueId)
+		{
+			var q = this.GetUnsafe(uniqueId);
+			if (q == null)
+				throw new SevereAutoban(_creature.Client, "{0} attempted to get a quest that they do not have",
+					_creature.EntityIdHex);
+
+			return q;
 		}
 
 		/// <summary>
@@ -76,7 +119,7 @@ namespace Aura.Channel.World.Entities.Creatures
 		/// <returns></returns>
 		public bool IsComplete(int id)
 		{
-			var quest = this.Get(id);
+			var quest = this.GetUnsafe(id);
 			return (quest != null && quest.State == QuestState.Complete);
 		}
 
@@ -106,7 +149,7 @@ namespace Aura.Channel.World.Entities.Creatures
 		{
 			// Remove quest if it's aleady there and not completed,
 			// or it will be shown twice till next relog.
-			var existingQuest = this.Get(questId);
+			var existingQuest = this.GetUnsafe(questId);
 			if (existingQuest != null && existingQuest.State < QuestState.Complete)
 				this.GiveUp(existingQuest);
 
@@ -134,10 +177,9 @@ namespace Aura.Channel.World.Entities.Creatures
 		/// </summary>
 		/// <param name="questId"></param>
 		/// <param name="objective"></param>
-		public bool Finish(int questId, string objective)
+		public void Finish(int questId, string objective)
 		{
 			var quest = this.Get(questId);
-			if (quest == null) return false;
 
 			var progress = quest.GetProgress(objective);
 			if (progress == null)
@@ -146,61 +188,54 @@ namespace Aura.Channel.World.Entities.Creatures
 			quest.SetDone(objective);
 
 			Send.QuestUpdate(_creature, quest);
-
-			return true;
 		}
 
 		/// <summary>
-		/// Completes and removes quest, if it exists.
+		/// Completes and removes quest.
 		/// </summary>
 		/// <param name="questId"></param>
-		public bool Complete(int questId)
+		public void Complete(int questId)
 		{
 			var quest = this.Get(questId);
-			if (quest == null) return false;
 
-			return this.Complete(quest);
+			this.Complete(quest);
 		}
 
 		/// <summary>
-		/// Completes and removes quest, if it exists.
+		/// Completes and removes quest.
 		/// </summary>
-		/// <param name="questId"></param>
-		public bool Complete(Quest quest)
+		/// <param name="quest"></param>
+		public void Complete(Quest quest)
 		{
-			var success = this.Complete(quest, true);
-			if (success)
-			{
-				quest.State = QuestState.Complete;
+			this.Complete(quest, true);
+			quest.State = QuestState.Complete;
 
-				ChannelServer.Instance.Events.OnPlayerCompletesQuest(_creature, quest.Id);
-			}
-			return success;
+			ChannelServer.Instance.Events.OnPlayerCompletesQuest(_creature, quest.Id);
+
 		}
 
 		/// <summary>
-		/// Completes and removes quest without rewards, if it exists.
+		/// Completes and removes quest without rewards.
 		/// </summary>
 		/// <param name="quest"></param>
 		/// <returns></returns>
-		public bool GiveUp(Quest quest)
+		public void GiveUp(Quest quest)
 		{
-			var success = this.Complete(quest, false);
-			if (success)
+			this.Complete(quest, false);
 				lock (_quests)
 					_quests.Remove(quest.Id);
-			return success;
 		}
 
 		/// <summary>
 		/// Completes and removes quest, if it exists.
 		/// </summary>
-		/// <param name="questId"></param>
+		/// <param name="quest"></param>
 		/// <param name="rewards">Shall rewards be given?</param>
-		private bool Complete(Quest quest, bool rewards)
+		private void Complete(Quest quest, bool rewards)
 		{
 			if (!_quests.ContainsValue(quest))
-				return false;
+				throw new SevereAutoban(_creature.Client, "'{0}' attempted to complete a quest they did not have.",
+					_creature.EntityIdHex);
 
 			if (rewards)
 			{
@@ -225,8 +260,6 @@ namespace Aura.Channel.World.Entities.Creatures
 
 			// Remove from quest log.
 			Send.QuestClear(_creature, quest.UniqueId);
-
-			return true;
 		}
 
 		/// <summary>
@@ -237,7 +270,7 @@ namespace Aura.Channel.World.Entities.Creatures
 		/// <returns></returns>
 		public bool IsActive(int questId, string objective = null)
 		{
-			var quest = this.Get(questId);
+			var quest = this.GetUnsafe(questId);
 			if (quest == null) return false;
 
 			var current = quest.CurrentObjective;

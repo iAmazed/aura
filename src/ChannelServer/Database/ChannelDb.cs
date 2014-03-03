@@ -531,7 +531,7 @@ namespace Aura.Channel.Database
 							var uniqueId = reader.GetInt64("questIdUnique");
 							var objective = reader.GetStringSafe("objective");
 
-							var quest = character.Quests.Get(uniqueId);
+							var quest = character.Quests.GetUnsafe(uniqueId);
 							if (quest == null)
 							{
 								Log.Error("Db.GetCharacterQuests: Unable to find quest for objective '{0}'.", objective);

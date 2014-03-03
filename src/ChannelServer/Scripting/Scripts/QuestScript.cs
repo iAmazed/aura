@@ -247,7 +247,7 @@ namespace Aura.Channel.Scripting.Scripts
 		{
 			if (creature == null || killer == null) return;
 
-			var quest = killer.Quests.Get(this.Id);
+			var quest = killer.Quests.GetUnsafe(this.Id);
 			if (quest == null) return;
 
 			var progress = quest.CurrentObjective;
@@ -276,7 +276,7 @@ namespace Aura.Channel.Scripting.Scripts
 		{
 			if (character == null) return;
 
-			var quest = character.Quests.Get(this.Id);
+			var quest = character.Quests.GetUnsafe(this.Id);
 			if (quest == null) return;
 
 			var progress = quest.CurrentObjectiveOrLast;
@@ -306,7 +306,7 @@ namespace Aura.Channel.Scripting.Scripts
 		{
 			if (creature == null || skill == null) return;
 
-			var quest = creature.Quests.Get(this.Id);
+			var quest = creature.Quests.GetUnsafe(this.Id);
 			if (quest == null) return;
 
 			var progress = quest.CurrentObjective;

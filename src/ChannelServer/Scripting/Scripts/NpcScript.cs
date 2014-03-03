@@ -397,22 +397,19 @@ namespace Aura.Channel.Scripting.Scripts
 		/// <param name="questId"></param>
 		/// <param name="objective"></param>
 		/// <returns></returns>
-		public bool FinishQuest(int questId, string objective)
+		public void FinishQuest(int questId, string objective)
 		{
-			return this.Player.Quests.Finish(questId, objective);
+			this.Player.Quests.Finish(questId, objective);
 		}
 
 		/// <summary>
 		/// Returns current quest objective.
 		/// </summary>
 		/// <param name="questId"></param>
-		/// <param name="objective"></param>
 		/// <returns></returns>
 		public string QuestObjective(int questId)
 		{
 			var quest = this.Player.Quests.Get(questId);
-			if (quest == null)
-				throw new Exception("NPC.GetQuestObjective: Player doesn't have quest '" + questId.ToString() + "'.");
 
 			var current = quest.CurrentObjective;
 			if (current == null)
