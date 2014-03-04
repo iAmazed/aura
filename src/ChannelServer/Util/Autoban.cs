@@ -1,4 +1,7 @@
-﻿using Aura.Channel.Database;
+﻿// Copyright (c) Aura development team - Licensed under GNU GPL
+// For more information, see license file in the main folder
+
+using Aura.Channel.Database;
 using Aura.Channel.Network;
 using Aura.Shared.Util;
 using System;

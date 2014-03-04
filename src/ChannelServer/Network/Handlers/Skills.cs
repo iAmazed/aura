@@ -27,7 +27,7 @@ namespace Aura.Channel.Network.Handlers
 		{
 			var skillId = (SkillId)packet.GetUShort();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null || !skill.IsRankable) goto L_Fail;
@@ -75,7 +75,7 @@ namespace Aura.Channel.Network.Handlers
 		{
 			var skillId = (SkillId)packet.GetUShort();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -125,7 +125,7 @@ namespace Aura.Channel.Network.Handlers
 		{
 			var skillId = (SkillId)packet.GetUShort();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -173,7 +173,7 @@ namespace Aura.Channel.Network.Handlers
 		{
 			var skillId = (SkillId)packet.GetUShort();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -214,7 +214,7 @@ namespace Aura.Channel.Network.Handlers
 		{
 			var skillId = (SkillId)packet.GetUShort();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -258,7 +258,7 @@ namespace Aura.Channel.Network.Handlers
 		{
 			var skillId = (SkillId)packet.GetUShort();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -302,7 +302,7 @@ namespace Aura.Channel.Network.Handlers
 		{
 			var skillId = (SkillId)packet.GetUShort();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
@@ -347,7 +347,7 @@ namespace Aura.Channel.Network.Handlers
 			var unkByte1 = packet.GetByte();
 			var unkByte2 = packet.GetByte();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			creature.Skills.CancelActiveSkill();
 		}

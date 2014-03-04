@@ -21,7 +21,7 @@ namespace Aura.Channel.Network.Handlers
 			var entityId = packet.GetLong();
 
 			// Check creature and region
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 			if ( creature.Region == null || creature.IsDead)
 				return; // TODO: Autoban?
 
@@ -72,7 +72,7 @@ namespace Aura.Channel.Network.Handlers
 			var entityId = packet.GetLong();
 
 			// Check creature and region
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 			if (creature.Region == null || creature.IsDead)
 				return; // TODO: Autoban?
 

@@ -27,7 +27,7 @@ namespace Aura.Channel.Network.Handlers
 			var x = packet.GetInt();
 			var y = packet.GetInt();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			var from = creature.GetPosition();
 			var to = new Position(x, y);
@@ -62,7 +62,7 @@ namespace Aura.Channel.Network.Handlers
 			var eventType = packet.GetInt();
 			var unkString = packet.GetString();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			// Do something with this information?
 		}

@@ -101,7 +101,7 @@ namespace Aura.Channel.Network.Handlers
 		[PacketHandler(Op.EnterRegionRequest)]
 		public void EnterRegionRequest(ChannelClient client, Packet packet)
 		{
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			// Check permission
 			if (!creature.Warping)
@@ -176,7 +176,7 @@ namespace Aura.Channel.Network.Handlers
 		[PacketHandler(Op.ChannelCharacterInfoRequest)]
 		public void ChannelCharacterInfoRequest(ChannelClient client, Packet packet)
 		{
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			if (creature.Master != null)
 			{
@@ -242,7 +242,7 @@ namespace Aura.Channel.Network.Handlers
 		[PacketHandler(Op.LeaveSoulStream)]
 		public void LeaveSoulStream(ChannelClient client, Packet packet)
 		{
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 			if (!creature.Temp.InSoulStream)
 				return; // TODO: Autoban?
 

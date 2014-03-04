@@ -33,7 +33,7 @@ namespace Aura.Channel.Network.Handlers
 			var npcEntityId = packet.GetLong();
 
 			// Check creature
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			// Check NPC
 			var target = ChannelServer.Instance.World.GetNpc(npcEntityId);
@@ -100,7 +100,7 @@ namespace Aura.Channel.Network.Handlers
 			var unkByte = packet.GetByte();
 
 			// Check creature
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			// Check session
 			if (!client.NpcSession.IsValid(npcId))
@@ -128,7 +128,7 @@ namespace Aura.Channel.Network.Handlers
 			var result = packet.GetString();
 			var sessionid = packet.GetInt();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			// Check session
 			if (!client.NpcSession.IsValid())
@@ -188,7 +188,7 @@ namespace Aura.Channel.Network.Handlers
 		{
 			var keyword = packet.GetString();
 
-			var character = client.GetCreature(packet.Id);
+			var character = client.GetCreatureSafe(packet.Id);
 
 			// Check session
 			if (!client.NpcSession.IsValid())
@@ -220,7 +220,7 @@ namespace Aura.Channel.Network.Handlers
 			var targetPocket = packet.GetByte(); // 0:cursor, 1:inv
 			var unk = packet.GetByte(); // storage gold?
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			// Check session
 			if (!client.NpcSession.IsValid())
@@ -282,7 +282,7 @@ namespace Aura.Channel.Network.Handlers
 			var entityId = packet.GetLong();
 			var unk = packet.GetByte();
 
-			var creature = client.GetCreature(packet.Id);
+			var creature = client.GetCreatureSafe(packet.Id);
 
 			// Check session
 			if (!client.NpcSession.IsValid())

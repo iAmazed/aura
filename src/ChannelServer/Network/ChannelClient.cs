@@ -44,11 +44,11 @@ namespace Aura.Channel.Network
 		/// 
 		/// WARNING: This unsafe method does not check if a
 		/// creature exists! It may return NULL and does NOT
-		/// invoke autoban code!
+		/// throw an exception if the creature does not exist!
 		/// </summary>
 		/// <param name="id"></param>
 		/// <returns></returns>
-		public Creature GetCreatureUnsafe(long id)
+		public Creature GetCreature(long id)
 		{
 			Creature creature;
 			this.Creatures.TryGetValue(id, out creature);
@@ -57,7 +57,7 @@ namespace Aura.Channel.Network
 
 		/// <summary>
 		/// Returns the creature by the given entity id. Throws
-		/// an Autoban exception if the creature does not exist
+		/// an exception if the creature does not exist
 		/// in this client.
 		/// </summary>
 		/// <param name="id"></param>
@@ -65,9 +65,9 @@ namespace Aura.Channel.Network
 		/// Thrown when a creature does not exist in this client
 		/// </exception>
 		/// <returns></returns>
-		public Creature GetCreature(long id)
+		public Creature GetCreatureSafe(long id)
 		{
-			var c = this.GetCreatureUnsafe(id);
+			var c = this.GetCreature(id);
 			if (c == null)
 				throw new SevereViolation("Tried to get nonexisting creature {0:X}", id);
 			
