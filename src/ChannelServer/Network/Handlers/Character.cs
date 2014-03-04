@@ -54,7 +54,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (!creature.IsDead)
 			{
-				throw new ModerateViolation("'{0}' tried to access the dead menu when they were not dead.", creature.Name);
+				Send.DeadMenuR(creature, null);
 			}
 
 			// ...

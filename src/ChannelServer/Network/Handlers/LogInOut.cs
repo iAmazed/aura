@@ -115,7 +115,8 @@ namespace Aura.Channel.Network.Handlers
 			var region = ChannelServer.Instance.World.GetRegion(creature.RegionId);
 			if (region == null)
 			{
-				throw new SevereViolation("Player '{0}' tried to enter unknown region '{1}'", creature.Name, creature.RegionId);
+				Log.Warning("Player '{0}' tried to enter unknown region '{1}'", creature.Name, creature.RegionId);
+				return;
 			}
 
 			// Characters that spawned at least once need to be saved.

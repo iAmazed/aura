@@ -62,7 +62,7 @@ namespace Aura.Channel.Network.Handlers
 			{
 				Send.NpcTalkStartR_Fail(creature);
 
-				Log.Warning("Creature '{0}' tried to talk to NPC '{1}', that doesn't have a script.", creature.Name, target.Name);
+				Log.Warning("NpcTalkStart: Creature '{0}' tried to talk to NPC '{1}', that doesn't have a script.", creature.Name, target.Name);
 				return;
 			}
 
@@ -140,7 +140,9 @@ namespace Aura.Channel.Network.Handlers
 			var match = Regex.Match(result, "<return type=\"string\">(?<result>[^<]*)</return>");
 			if (!match.Success)
 			{
-				throw new SevereViolation("Player '{0}' sent invalid return ({1}).", creature.Name, result);
+				Log.Warning("NpcTalkSelect: Player '{0}' sent invalid return ({1}).", creature.Name, result);
+				Send.NpcTalkEndR(creature, client.NpcSession.Target.EntityId);
+				return;
 			}
 
 			var response = match.Groups["result"].Value;
@@ -252,6 +254,7 @@ namespace Aura.Channel.Network.Handlers
 			{
 				Send.MsgBox(creature, Localization.Get("world.shop_gold")); // Insufficient amount of gold.
 				Send.NpcShopBuyItemR(creature, false);
+				return;
 			}
 
 			var success = false;

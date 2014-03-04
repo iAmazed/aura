@@ -75,7 +75,10 @@ namespace Aura.Channel.Network.Handlers
 			Creature target = null;
 			if (targetEntityId != 0 && (target = creature.Region.GetCreature(targetEntityId)) == null)
 			{
-				throw new ModerateViolation("Creature '{0}' targeted invalid entity '{1:X16}'.", creature.Name, targetEntityId);
+				Log.Warning("Creature '{0}' targeted invalid entity '{1:X16}'.", creature.Name, targetEntityId);
+				Send.Notice(creature, "Invalid target");
+				Send.SetCombatTarget(creature, 0, 0);
+				return;
 			}
 
 			creature.Target = target;
