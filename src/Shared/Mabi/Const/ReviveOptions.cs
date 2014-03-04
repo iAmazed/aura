@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Aura development team - Licensed under GNU GPL
 // For more information, see license file in the main folder
 
-using System;
-
 namespace Aura.Shared.Mabi.Const
 {
-	[Flags]
 	public enum ReviveOptions : uint
 	{
 		None = 0x00,

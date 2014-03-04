@@ -133,7 +133,7 @@ namespace Aura.Channel.World.Entities.Creatures
 		/// <summary>
 		/// Returns true if creature has keyword.
 		/// </summary>
-		/// <param name="keyword"></param>
+		/// <param name="keywordId"></param>
 		/// <returns></returns>
 		public bool Has(string keyword)
 		{

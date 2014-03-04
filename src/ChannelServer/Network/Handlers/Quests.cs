@@ -27,8 +27,11 @@ namespace Aura.Channel.Network.Handlers
 			var creature = client.GetCreature(packet.Id);
 
 			var quest = creature.Quests.Get(uniqueQuestId);
-			if (!quest.IsDone)
-				throw new SevereAutoban(client, "'{0}' attempted to complete an incomplete quest.", creature.EntityIdHex);
+			if (quest == null || !quest.IsDone)
+				throw new SevereAutoban(client, "'{0}' attempted to complete an already-finished quest.", creature.Name);
+
+			if (creature.Quests.Complete(quest))
+				Send.CompleteQuestR(creature, true);
 
 			Send.CompleteQuestR(creature, false);
 		}
@@ -47,8 +50,15 @@ namespace Aura.Channel.Network.Handlers
 			var creature = client.GetCreature(packet.Id);
 
 			var quest = creature.Quests.Get(uniqueQuestId);
+			if (quest == null) goto L_Fail;
+
+			if (!creature.Quests.GiveUp(quest)) goto L_Fail;
 
 			Send.GiveUpQuestR(creature, true);
+			return;
+
+		L_Fail:
+			Send.GiveUpQuestR(creature, false);
 		}
 	}
 }

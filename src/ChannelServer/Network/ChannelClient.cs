@@ -59,8 +59,6 @@ namespace Aura.Channel.Network
 		/// Returns the creature by the given entity id. Throws
 		/// an Autoban exception if the creature does not exist
 		/// in this client.
-		/// 
-		/// NEVER returns null
 		/// </summary>
 		/// <param name="id"></param>
 		/// <exception cref="AutobanTriggeredException">
