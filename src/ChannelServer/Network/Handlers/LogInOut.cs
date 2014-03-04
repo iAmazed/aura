@@ -106,7 +106,7 @@ namespace Aura.Channel.Network.Handlers
 			// Check permission
 			if (!creature.Warping)
 			{
-				throw new SevereAutoban(client, "Unauthorized warp attemp from '{0}'", creature.Name);
+				throw new SevereViolation("Unauthorized warp attemp from '{0}'", creature.Name);
 			}
 
 			creature.Warping = false;
@@ -115,7 +115,7 @@ namespace Aura.Channel.Network.Handlers
 			var region = ChannelServer.Instance.World.GetRegion(creature.RegionId);
 			if (region == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to enter unknown region '{1}'", creature.Name, creature.RegionId);
+				throw new SevereViolation("Player '{0}' tried to enter unknown region '{1}'", creature.Name, creature.RegionId);
 			}
 
 			// Characters that spawned at least once need to be saved.

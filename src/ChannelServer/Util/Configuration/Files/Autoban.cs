@@ -11,41 +11,41 @@ namespace Aura.Channel.Util.Configuration.Files
 		/// <summary>
 		/// Turn autoban on?
 		/// </summary>
-		public bool Enabled;
+		public bool Enabled {get; private set; }
 
 		/// <summary>
 		/// The ban threshold. When a player's score is greater than
 		/// or equal to this number, they're banned.
 		/// </summary>
-		public int BanAt;
+		public int BanAt {get; private set; }
 		
 		/// <summary>
 		/// The amount to increase a player's score by when a Mild incident occurs
 		/// </summary>
-		public int MildAmount;
+		public int MildAmount {get; private set; }
 		
 		/// <summary>
 		/// The amount to increase a player's score by when a Moderate incident occurs
 		/// </summary>
-		public int ModerateAmount;
+		public int ModerateAmount {get; private set; }
 		
 		/// <summary>
 		/// The amount to increase a player's score by when a Severe incident occurs
 		/// </summary>
-		public int SevereAmount;
+		public int SevereAmount {get; private set; }
 		
 		/// <summary>
 		/// The amount of time it takes to reduce a player's score by one point.
 		/// 
 		/// Specify zero to disable reduction
 		/// </summary>
-		public TimeSpan ReductionTime;
+		public TimeSpan ReductionTime {get; private set; }
 		
 		/// <summary>
 		/// The "seed" ban length. This is used as the ban time for the first offense
 		/// and in calculations for subsequent offenses
 		/// </summary>
-		public TimeSpan InitialBanTime;
+		public TimeSpan InitialBanTime {get; private set; }
 
 		/// <summary>
 		/// The type of susequent ban length increase.
@@ -59,14 +59,14 @@ namespace Aura.Channel.Util.Configuration.Files
 		/// Where i is the number of times the player has been autobanned
 		/// </remarks>
 		/// </summary>
-		public AutobanLengthIncrease LengthIncrease;
+		public AutobanLengthIncrease LengthIncrease {get; private set; }
 
 		/// <summary>
 		/// Determines if we should reset the play's Ban Score to 0
 		/// when they're autobanned. If false, only the passage of time
 		/// (if enabled) will reduce the band score.
 		/// </summary>
-		public bool ResetScoreOnBan;
+		public bool ResetScoreOnBan {get; private set; }
 
 		public void Load()
 		{

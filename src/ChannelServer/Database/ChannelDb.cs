@@ -558,7 +558,7 @@ namespace Aura.Channel.Database
 		{
 			using (var conn = AuraDb.Instance.Connection)
 			{
-				using (var cmd = new InsertCommand("INSERT INTO `autoban` {0}", conn))
+				using (var cmd = new InsertCommand("INSERT INTO `log_autoban` {0}", conn))
 				{
 					cmd.Set("accountId", a.Id);
 					cmd.Set("date", DateTime.Now);

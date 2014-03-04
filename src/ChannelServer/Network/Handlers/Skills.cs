@@ -80,7 +80,7 @@ namespace Aura.Channel.Network.Handlers
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to use skill '{1}', which they don't have.", creature.Name, skillId);
+				throw new SevereViolation("Player '{0}' tried to use skill '{1}', which they don't have.", creature.Name, skillId);
 			}
 
 			var handler = ChannelServer.Instance.SkillManager.GetHandler<IStartable>(skillId);
@@ -178,7 +178,7 @@ namespace Aura.Channel.Network.Handlers
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
+				throw new SevereViolation("Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
 			}
 
 			var handler = ChannelServer.Instance.SkillManager.GetHandler<IPreparable>(skillId);
@@ -219,7 +219,7 @@ namespace Aura.Channel.Network.Handlers
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
+				throw new SevereViolation("Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
 			}
 
 			var handler = ChannelServer.Instance.SkillManager.GetHandler<IReadyable>(skillId);
@@ -263,7 +263,7 @@ namespace Aura.Channel.Network.Handlers
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
+				throw new SevereViolation("Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
 			}
 
 			var handler = ChannelServer.Instance.SkillManager.GetHandler<IUseable>(skillId);
@@ -307,7 +307,7 @@ namespace Aura.Channel.Network.Handlers
 			var skill = creature.Skills.Get(skillId);
 			if (skill == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
+				throw new SevereViolation("Player '{0}' tried to use skill '{1}', which he doesn't have.", creature.Name, skillId);
 			}
 
 			var handler = ChannelServer.Instance.SkillManager.GetHandler<ICompletable>(skillId);

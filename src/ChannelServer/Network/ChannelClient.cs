@@ -61,7 +61,7 @@ namespace Aura.Channel.Network
 		/// in this client.
 		/// </summary>
 		/// <param name="id"></param>
-		/// <exception cref="AutobanTriggeredException">
+		/// <exception cref="SecurityViolationException">
 		/// Thrown when a creature does not exist in this client
 		/// </exception>
 		/// <returns></returns>
@@ -69,7 +69,7 @@ namespace Aura.Channel.Network
 		{
 			var c = this.GetCreatureUnsafe(id);
 			if (c == null)
-				throw new SevereAutoban(this, "Tried to get nonexisting creature {0:X}", id);
+				throw new SevereViolation("Tried to get nonexisting creature {0:X}", id);
 			
 			return c;
 		}

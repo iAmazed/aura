@@ -28,7 +28,7 @@ namespace Aura.Channel.Network.Handlers
 
 			var quest = creature.Quests.Get(uniqueQuestId);
 			if (quest == null || !quest.IsDone)
-				throw new SevereAutoban(client, "'{0}' attempted to complete an already-finished quest.", creature.Name);
+				throw new SevereViolation("'{0}' attempted to complete an already-finished quest.", creature.Name);
 
 			if (creature.Quests.Complete(quest))
 				Send.CompleteQuestR(creature, true);

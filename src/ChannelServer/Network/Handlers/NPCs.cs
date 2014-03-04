@@ -39,7 +39,7 @@ namespace Aura.Channel.Network.Handlers
 			var target = ChannelServer.Instance.World.GetNpc(npcEntityId);
 			if (target == null)
 			{
-				throw new SevereAutoban(client, "Creature '{0}' tried to talk to non-existing NPC '{1:X16}'.", creature.Name, npcEntityId);
+				throw new SevereViolation("Creature '{0}' tried to talk to non-existing NPC '{1:X16}'.", creature.Name, npcEntityId);
 			}
 
 			// Special NPCs
@@ -54,7 +54,7 @@ namespace Aura.Channel.Network.Handlers
 			// Some special NPCs require special permission.
 			if (disallow)
 			{
-				throw new SevereAutoban(client, "Creature '{0}' tried to talk to NPC '{1}' without permission.", creature.Name, target.Name);
+				throw new SevereViolation("Creature '{0}' tried to talk to NPC '{1}' without permission.", creature.Name, target.Name);
 							}
 
 			// Check script
@@ -105,7 +105,7 @@ namespace Aura.Channel.Network.Handlers
 			// Check session
 			if (!client.NpcSession.IsValid(npcId))
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried ending invalid NPC session.", creature.Name);
+				throw new SevereViolation("Player '{0}' tried ending invalid NPC session.", creature.Name);
 			}
 
 			client.NpcSession.Clear();
@@ -133,14 +133,14 @@ namespace Aura.Channel.Network.Handlers
 			// Check session
 			if (!client.NpcSession.IsValid())
 			{
-				throw new SevereAutoban(client, "Player '{0}' is in invalid session.", creature.Name);
+				throw new SevereViolation("Player '{0}' is in invalid session.", creature.Name);
 			}
 
 			// Check result string
 			var match = Regex.Match(result, "<return type=\"string\">(?<result>[^<]*)</return>");
 			if (!match.Success)
 			{
-				throw new SevereAutoban(client, "Player '{0}' sent invalid return ({1}).", creature.Name, result);
+				throw new SevereViolation("Player '{0}' sent invalid return ({1}).", creature.Name, result);
 			}
 
 			var response = match.Groups["result"].Value;
@@ -193,13 +193,13 @@ namespace Aura.Channel.Network.Handlers
 			// Check session
 			if (!client.NpcSession.IsValid())
 			{
-				throw new SevereAutoban(client, "Player '{0}' sent a keyword without valid NPC session.", character.Name);
+				throw new SevereViolation("Player '{0}' sent a keyword without valid NPC session.", character.Name);
 			}
 
 			// Check keyword
 			if (!character.Keywords.Has(keyword))
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried using keyword '{1}', without knowing it.", character.Name, keyword);
+				throw new SevereViolation("Player '{0}' tried using keyword '{1}', without knowing it.", character.Name, keyword);
 			}
 
 			Send.NpcTalkKeywordR(character, keyword);
@@ -225,20 +225,20 @@ namespace Aura.Channel.Network.Handlers
 			// Check session
 			if (!client.NpcSession.IsValid())
 			{
-				throw new SevereAutoban(client, "Player '{0}' is in invalid session.", creature.Name);
+				throw new SevereViolation("Player '{0}' is in invalid session.", creature.Name);
 			}
 
 			// Check open shop
 			if (creature.Temp.CurrentShop == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to buy something with current shop being null.", creature.EntityIdHex);
+				throw new SevereViolation("Player '{0}' tried to buy something with current shop being null.", creature.EntityIdHex);
 			}
 
 			// Get item
 			var item = creature.Temp.CurrentShop.GetItem(entityId);
 			if (item == null)
 			{
-				throw new SevereAutoban(client, "Item '{0:X16}' doesn't exist in shop.", entityId);
+				throw new SevereViolation("Item '{0:X16}' doesn't exist in shop.", entityId);
 			}
 
 			// The client expects the price for a full stack to be sent
@@ -287,20 +287,20 @@ namespace Aura.Channel.Network.Handlers
 			// Check session
 			if (!client.NpcSession.IsValid())
 			{
-				throw new SevereAutoban(client, "Player '{0}' is in invalid session.", creature.Name);
+				throw new SevereViolation("Player '{0}' is in invalid session.", creature.Name);
 			}
 
 			// Check open shop
 			if (creature.Temp.CurrentShop == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to sell something with current shop being null.", creature.EntityIdHex);
+				throw new SevereViolation("Player '{0}' tried to sell something with current shop being null.", creature.EntityIdHex);
 			}
 
 			// Get item
 			var item = creature.Inventory.GetItem(entityId);
 			if (item == null)
 			{
-				throw new SevereAutoban(client, "Item '{0}' doesn't exist in '{1}'s inventory.", entityId.ToString("X16"), creature.Name);
+				throw new SevereViolation("Item '{0}' doesn't exist in '{1}'s inventory.", entityId.ToString("X16"), creature.Name);
 			}
 
 			// Calculate selling price
@@ -323,7 +323,7 @@ namespace Aura.Channel.Network.Handlers
 			// Remove item from inv
 			if (!creature.Inventory.Remove(item))
 			{
-				throw new SevereAutoban(client, "Failed to remove item '{0}' from '{1}'s inventory.", entityId.ToString("X16"), creature.Name);
+				throw new SevereViolation("Failed to remove item '{0}' from '{1}'s inventory.", entityId.ToString("X16"), creature.Name);
 			}
 
 			// Add gold

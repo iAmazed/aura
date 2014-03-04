@@ -283,12 +283,12 @@ namespace Aura.Channel.World
 
 			if (!_accessiblePockets.Contains(source))
 			{
-				throw new SevereAutoban(_creature.Client, "'{0}' tried to move item from inaccessible pocket {1}", source);
+				throw new SevereViolation("'{0}' tried to move item from inaccessible pocket {1}", source);
 			}
 
 			if (!_accessiblePockets.Contains(target) || target == Pocket.Temporary)
 			{
-				throw new SevereAutoban(_creature.Client, "'{0}' tried to move item to inaccessible pocket {1}", target);
+				throw new SevereViolation("'{0}' tried to move item to inaccessible pocket {1}", target);
 			}
 
 			Item collidingItem = null;

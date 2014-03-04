@@ -39,7 +39,7 @@ namespace Aura.Channel.Network.Handlers
 			var item = creature.Inventory.GetItem(entityId);
 			if (item == null)
 			{
-				throw new SevereAutoban(client, "'{0}' tried to move nonexisting item {1:X16}", creature.Name, entityId);
+				throw new SevereViolation("'{0}' tried to move nonexisting item {1:X16}", creature.Name, entityId);
 			}
 
 			// Try to move item

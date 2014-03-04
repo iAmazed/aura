@@ -75,7 +75,7 @@ namespace Aura.Channel.Network.Handlers
 			Creature target = null;
 			if (targetEntityId != 0 && (target = creature.Region.GetCreature(targetEntityId)) == null)
 			{
-				throw new ModerateAutoban(client, "Creature '{0}' targeted invalid entity '{1:X16}'.", creature.Name, targetEntityId);
+				throw new ModerateViolation("Creature '{0}' targeted invalid entity '{1:X16}'.", creature.Name, targetEntityId);
 			}
 
 			creature.Target = target;

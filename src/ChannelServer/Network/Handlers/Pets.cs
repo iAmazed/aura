@@ -29,13 +29,13 @@ namespace Aura.Channel.Network.Handlers
 
 			if (creature.Pet != null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to spawn multiple pets.", client.Account.Id);
+				throw new SevereViolation("Player '{0}' tried to spawn multiple pets.", client.Account.Id);
 			}
 
 			var pet = client.Account.GetPet(entityId);
 			if (pet == null)
 			{
-				throw new SevereAutoban(client, "Failed to get pet '{0:X16}', for '{1}'.", client.Account.Id);
+				throw new SevereViolation("Failed to get pet '{0:X16}', for '{1}'.", client.Account.Id);
 			}
 
 			// Doesn't fix giant mount problems.
@@ -74,7 +74,7 @@ namespace Aura.Channel.Network.Handlers
 			var pet = creature.Pet;
 			if (pet == null || pet.EntityId != entityId)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to unsummon invalid pet.", client.Account.Id);
+				throw new SevereViolation("Player '{0}' tried to unsummon invalid pet.", client.Account.Id);
 			}
 
 			client.Creatures.Remove(pet.EntityId);
@@ -143,7 +143,7 @@ namespace Aura.Channel.Network.Handlers
 
 			if (pet.Master.RegionId != pet.RegionId)
 			{
-				throw new SevereAutoban(client, "Illegal pet teleport by '{0:X16}'.", packet.Id);
+				throw new SevereViolation("Illegal pet teleport by '{0:X16}'.", packet.Id);
 			}
 
 			pet.Warp(pet.RegionId, x, y);
@@ -182,20 +182,20 @@ namespace Aura.Channel.Network.Handlers
 			var pet = client.GetCreature(petEntityId);
 			if (pet.Master == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to move item to invalid pet.", creature.Name);
+				throw new SevereViolation("Player '{0}' tried to move item to invalid pet.", creature.Name);
 			}
 
 			// Get item
 			var item = creature.Inventory.GetItem(itemEntityId);
 			if (item == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to move invalid item to pet.", creature.Name);
+				throw new SevereViolation("Player '{0}' tried to move invalid item to pet.", creature.Name);
 			}
 
 			// Check pocket
 			if (pocket != Pocket.Inventory)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to move item to invalid pocket '{1}'.", creature.Name, pocket);
+				throw new SevereViolation("Player '{0}' tried to move item to invalid pocket '{1}'.", creature.Name, pocket);
 			}
 
 			// Try move
@@ -230,14 +230,14 @@ namespace Aura.Channel.Network.Handlers
 			var pet = client.GetCreature(petEntityId);
 			if (pet.Master == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to move item from invalid pet.", creature.Name);
+				throw new SevereViolation("Player '{0}' tried to move item from invalid pet.", creature.Name);
 			}
 
 			// Get item
 			var item = pet.Inventory.GetItem(itemEntityId);
 			if (item == null)
 			{
-				throw new SevereAutoban(client, "Player '{0}' tried to move invalid item from pet.", creature.Name);
+				throw new SevereViolation("Player '{0}' tried to move invalid item from pet.", creature.Name);
 			}
 
 			// Try move

@@ -35,7 +35,7 @@ namespace Aura.Channel.Util
 				if (value < 0)
 					value = 0;
 
-				_client.Account.AutobanCount = 0;
+				_client.Account.AutobanCount = value;
 			}
 		}
 
@@ -101,17 +101,17 @@ namespace Aura.Channel.Util
 	}
 
 	/// <summary>
-	/// The exception to throw whever you want to invoke the autoban system
+	/// The exception to throw when someone does something bad.
+	/// 
+	/// If thrown from a packet handler, invokes Autoban code.
 	/// </summary>
-	public abstract class AutobanTriggeredException : Exception
+	public abstract class SecurityViolationException : Exception
 	{
 		public IncidentSeverityLevel Level { get; private set; }
-		public Autoban Autoban { get; private set; }
 		public string Report { get; private set; }
 
-		public AutobanTriggeredException(Autoban ab, IncidentSeverityLevel lvl, string report)
+		public SecurityViolationException(IncidentSeverityLevel lvl, string report)
 		{
-			this.Autoban = ab;
 			this.Level = lvl;
 			this.Report = report;
 		}
@@ -121,10 +121,10 @@ namespace Aura.Channel.Util
 	/// Used to indicate something suspicious happened, but it
 	/// *could* be nothing. This setting should be rarely used...
 	/// </summary>
-	public class MildAutoban: AutobanTriggeredException
+	public class MildViolation: SecurityViolationException
 	{
-		public MildAutoban(ChannelClient client, string report, params object[] args)
-			: base(client.Autoban,  IncidentSeverityLevel.Mild,
+		public MildViolation(string report, params object[] args)
+			: base(IncidentSeverityLevel.Mild,
 				new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().Name + ": " + string.Format(report, args))
 		{
 
@@ -134,10 +134,10 @@ namespace Aura.Channel.Util
 	/// <summary>
 	/// Something that is a strong indicator for a hack, but not certain.
 	/// </summary>
-	public class ModerateAutoban: AutobanTriggeredException
+	public class ModerateViolation: SecurityViolationException
 	{
-		public ModerateAutoban(ChannelClient client, string report, params object[] args)
-			: base(client.Autoban,  IncidentSeverityLevel.Moderate,
+		public ModerateViolation(string report, params object[] args)
+			: base(IncidentSeverityLevel.Moderate,
 				new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().Name + ": " + string.Format(report, args))
 		{
 
@@ -147,10 +147,10 @@ namespace Aura.Channel.Util
 	/// <summary>
 	/// Something happened that could really only be caused by a hack tool
 	/// </summary>
-	public class SevereAutoban: AutobanTriggeredException
+	public class SevereViolation: SecurityViolationException
 	{
-		public SevereAutoban(ChannelClient client, string report, params object[] args)
-			: base(client.Autoban,  IncidentSeverityLevel.Severe,
+		public SevereViolation(string report, params object[] args)
+			: base(IncidentSeverityLevel.Severe,
 				new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().Name + ": " + string.Format(report, args))
 		{
 

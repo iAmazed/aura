@@ -25,10 +25,11 @@ namespace Aura.Channel.Network.Handlers
 			{
 				base.Handle(client, packet);
 			}
-			catch (AutobanTriggeredException ex)
+			catch (SecurityViolationException ex)
 			{
-				ex.Autoban.Incident(ex.Level, ex.Report);
+				client.Autoban.Incident(ex.Level, ex.Report);
 			}
+			// TODO: Catch other exceptions?
 		}
 	}
 }

@@ -158,7 +158,7 @@ namespace Aura.Channel.World.Entities.Creatures
 			if (titleId != 0 && !this.IsUsable(titleId))
 			{
 				this.SetTitle(0, option);
-				throw new ModerateAutoban(_creature.Client, "Player '{0}' tried to use disabled title '{1}'.", _creature.Name, titleId);
+				throw new ModerateViolation("Player '{0}' tried to use disabled title '{1}'.", _creature.Name, titleId);
 			}
 
 			TitleData data = null;
@@ -168,7 +168,7 @@ namespace Aura.Channel.World.Entities.Creatures
 				if (data == null)
 				{
 					this.SetTitle(0, option);
-					throw new ModerateAutoban(_creature.Client, "Player '{0}' tried to use unknown title '{1}'.", _creature.Name, titleId);
+					throw new ModerateViolation("Player '{0}' tried to use unknown title '{1}'.", _creature.Name, titleId);
 				}
 			}
 
