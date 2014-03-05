@@ -32,11 +32,7 @@ namespace Aura.Channel.Network.Handlers
 				throw new SevereViolation("Player '{0}' tried to spawn multiple pets.", client.Account.Id);
 			}
 
-			var pet = client.Account.GetPet(entityId);
-			if (pet == null)
-			{
-				throw new SevereViolation("Failed to get pet '{0:X16}', for '{1}'.", client.Account.Id);
-			}
+			var pet = client.Account.GetPetSafe(entityId);
 
 			// Doesn't fix giant mount problems.
 			if (creature.IsGiant)

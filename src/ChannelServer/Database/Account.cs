@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Aura.Channel.Util;
 using Aura.Channel.World.Entities;
 using Aura.Channel.Scripting;
 
@@ -40,14 +41,41 @@ namespace Aura.Channel.Database
 			this.LastLogin = DateTime.Now;
 		}
 
+		public PlayerCreature GetCharacterOrPetSafe(long entityId)
+		{
+			var c = this.GetCharacterOrPet(entityId);
+			if (c != null)
+				return c;
+
+			throw new SevereViolation("Account does not contain an entity {0:X16}", entityId);
+		}
+
 		public PlayerCreature GetCharacterOrPet(long entityId)
 		{
 			return GetCharacter(entityId) ?? GetPet(entityId) as PlayerCreature;
 		}
 
+		public Character GetCharacterSafe(long entityId)
+		{
+			var c = this.GetCharacter(entityId);
+			if (c != null)
+				return c;
+
+			throw new SevereViolation("Account does not contain a character {0:X16}", entityId);
+		}
+
 		public Character GetCharacter(long entityId)
 		{
 			return this.Characters.FirstOrDefault(a => a.EntityId == entityId);
+		}
+
+		public Pet GetPetSafe(long entityId)
+		{
+			var c = this.GetPet(entityId);
+			if (c != null)
+				return c;
+
+			throw new SevereViolation("Account does not contain a pet {0:X16}", entityId);
 		}
 
 		public Pet GetPet(long entityId)
