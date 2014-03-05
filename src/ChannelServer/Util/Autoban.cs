@@ -5,6 +5,7 @@ using Aura.Channel.Database;
 using Aura.Channel.Network;
 using Aura.Shared.Util;
 using System;
+using System.Linq;
 
 namespace Aura.Channel.Util
 {
@@ -110,13 +111,33 @@ namespace Aura.Channel.Util
 	/// </summary>
 	public abstract class SecurityViolationException : Exception
 	{
+		private const int STACK_DEPTH = 5;
+
+		private string _message;
+
 		public IncidentSeverityLevel Level { get; private set; }
-		public string Report { get; private set; }
+
+		public override string Message
+		{
+			get
+			{
+				return _message;
+			}
+		}
 
 		public SecurityViolationException(IncidentSeverityLevel lvl, string report)
 		{
 			this.Level = lvl;
-			this.Report = report;
+
+			var stacktrace = new System.Diagnostics.StackTrace();
+
+			var stackReport = string.Join("-->", stacktrace.GetFrames()
+				.Skip(2) // Skip this and derived ctor
+				.Take(STACK_DEPTH)
+				.Reverse()
+				.Select(n => n.GetMethod().Name));
+
+			_message = string.Format("{0}: {1}  === {2}", stacktrace.GetFrame(2).GetMethod().Name,  report, stackReport);
 		}
 	}
 
@@ -127,8 +148,7 @@ namespace Aura.Channel.Util
 	public class MildViolation: SecurityViolationException
 	{
 		public MildViolation(string report, params object[] args)
-			: base(IncidentSeverityLevel.Mild,
-				new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().Name + ": " + string.Format(report, args))
+			: base(IncidentSeverityLevel.Mild, string.Format(report, args))
 		{
 
 		}
@@ -140,8 +160,7 @@ namespace Aura.Channel.Util
 	public class ModerateViolation: SecurityViolationException
 	{
 		public ModerateViolation(string report, params object[] args)
-			: base(IncidentSeverityLevel.Moderate,
-				new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().Name + ": " + string.Format(report, args))
+			: base(IncidentSeverityLevel.Moderate, string.Format(report, args))
 		{
 
 		}
@@ -153,8 +172,7 @@ namespace Aura.Channel.Util
 	public class SevereViolation: SecurityViolationException
 	{
 		public SevereViolation(string report, params object[] args)
-			: base(IncidentSeverityLevel.Severe,
-				new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().Name + ": " + string.Format(report, args))
+			: base(IncidentSeverityLevel.Severe, string.Format(report, args))
 		{
 
 		}

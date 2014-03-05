@@ -27,7 +27,7 @@ namespace Aura.Channel.Network.Handlers
 			}
 			catch (SecurityViolationException ex)
 			{
-				client.Autoban.Incident(ex.Level, ex.Report);
+				client.Autoban.Incident(ex.Level, ex.Message);
 			}
 			// TODO: Catch other exceptions?
 		}
