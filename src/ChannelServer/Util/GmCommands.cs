@@ -32,6 +32,7 @@ namespace Aura.Channel.Util
 			// Players
 			Add(00, 50, "where", "", HandleWhere);
 			Add(00, 50, "cp", "", HandleCp);
+			Add(00, 50, "distance", "", HandleDistance);
 
 			// VIPs
 			Add(01, 50, "go", "<location>", HandleGo);
@@ -57,9 +58,9 @@ namespace Aura.Channel.Util
 			Add(50, 50, "speed", "[increase]", HandleSpeed);
 			Add(50, 50, "spawn", "<race> [amount]", HandleSpawn);
 			Add(50, 50, "ap", "<amount>", HandleAp);
-			Add(50, 50, "gmcp", "", HandleGmcp);
-			Add(50, 99, "card", "<id>", HandleCard);
-			Add(50, 99, "petcard", "<race>", HandleCard);
+			Add(50, -1, "gmcp", "", HandleGmcp);
+			Add(50, 50, "card", "<id>", HandleCard);
+			Add(50, 50, "petcard", "<race>", HandleCard);
 			Add(50, 50, "heal", "", HandleHeal);
 			Add(50, 50, "clean", "", HandleClean);
 			Add(50, 50, "condition", "[a] [b] [c] [d] [e]", HandleCondition);
@@ -71,9 +72,9 @@ namespace Aura.Channel.Util
 
 			// Admins
 			Add(99, 99, "variant", "<xml_file>", HandleVariant);
-			Add(99, 99, "reloaddata", "", HandleReloadData);
-			Add(99, 99, "reloadscripts", "", HandleReloadScripts);
-			Add(99, 99, "reloadconf", "", HandleReloadConf);
+			Add(99, -1, "reloaddata", "", HandleReloadData);
+			Add(99, -1, "reloadscripts", "", HandleReloadScripts);
+			Add(99, -1, "reloadconf", "", HandleReloadConf);
 			Add(99, 99, "closenpc", "", HandleCloseNpc);
 
 			// Aliases
@@ -135,38 +136,39 @@ namespace Aura.Channel.Util
 		/// <returns></returns>
 		public bool Process(ChannelClient client, Creature creature, string message)
 		{
-			if (message.Length < 2 || !message.StartsWith(ChannelServer.Instance.Conf.Commands.Prefix.ToString()))
+			if (message.Length < 2 || !message.StartsWith(ChannelServer.Instance.Conf.Commands.Prefix.ToString(CultureInfo.InvariantCulture)))
 				return false;
 
 			// Parse arguments
 			var args = this.ParseLine(message);
-			args[0].TrimStart(ChannelServer.Instance.Conf.Commands.Prefix);
 
-			// Handle char commands
 			var sender = creature;
 			var target = creature;
 			var isCharCommand = message.StartsWith(ChannelServer.Instance.Conf.Commands.Prefix2);
+
+			// Handle char commands
 			if (isCharCommand)
 			{
 				// Get target player
-				if (args.Length < 2 || (target = ChannelServer.Instance.World.GetPlayer(args[1])) == null)
+				if (args.Count < 2 || (target = ChannelServer.Instance.World.GetPlayer(args[1])) == null)
 				{
 					Send.ServerMessage(creature, Localization.Get("Target not found."));
 					return true;
 				}
 
-				// Any better way to remove the target? =/
-				var tmp = new List<string>(args);
-				tmp.RemoveAt(1);
-				args = tmp.ToArray();
+				// Remove target name from the args
+				args.RemoveAt(1);
 			}
 
 			// Get command
 			var command = this.GetCommand(args[0]);
 			if (command == null)
 			{
-				Send.ServerMessage(creature, Localization.Get("Unknown command '{0}'."), args[0]);
-				return true;
+				// Don't send invalid command message because it'll interfere with
+				// 4chan-greentext style ">lol"
+
+				//Send.ServerMessage(creature, Localization.Get("Unknown command '{0}'."), args[0]);
+				return false;
 			}
 
 			var commandConf = ChannelServer.Instance.Conf.Commands.GetAuth(command.Name, command.Auth, command.CharAuth);
@@ -174,7 +176,13 @@ namespace Aura.Channel.Util
 			// Check auth
 			if ((!isCharCommand && client.Account.Authority < commandConf.Auth) || (isCharCommand && client.Account.Authority < commandConf.CharAuth))
 			{
-				Send.ServerMessage(creature, Localization.Get("Unknown command '{0}'."), args[0]);
+				Send.ServerMessage(creature, Localization.Get("You're not authorized to use '{0}'."), args[0]);
+				return true;
+			}
+
+			if (isCharCommand && commandConf.CharAuth < 0)
+			{
+				Send.ServerMessage(creature, Localization.Get("Command '{0}' cannot be used on another character."), args[0]);
 				return true;
 			}
 
@@ -185,7 +193,7 @@ namespace Aura.Channel.Util
 			if (result == CommandResult.InvalidArgument)
 			{
 				Send.ServerMessage(creature, Localization.Get("Usage: {0} {1}"), command.Name, command.Usage);
-				if (command.CharAuth <= client.Account.Authority)
+				if (command.CharAuth <= client.Account.Authority && command.CharAuth > 0)
 					Send.ServerMessage(creature, Localization.Get("Usage: {0} <target> {1}"), command.Name, command.Usage);
 
 				return true;
@@ -202,7 +210,7 @@ namespace Aura.Channel.Util
 
 		// ------------------------------------------------------------------
 
-		public CommandResult HandleWhere(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleWhere(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			var pos = target.GetPosition();
 			var msg = sender == target
@@ -214,14 +222,14 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleWarp(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleWarp(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			// Handles both warp and jump
 
 			var warp = (args[0] == "warp");
 			var offset = (warp ? 1 : 0);
 
-			if (warp && args.Length < 2)
+			if (warp && args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			// Get region id
@@ -247,14 +255,14 @@ namespace Aura.Channel.Util
 			int x = -1, y = -1;
 
 			// Parse X
-			if (args.Length > 1 + offset && !int.TryParse(args[1 + offset].Replace("x:", ""), out x))
+			if (args.Count > 1 + offset && !int.TryParse(args[1 + offset].Replace("x:", ""), out x))
 			{
 				Send.ServerMessage(sender, Localization.Get("Invalid X coordinate."));
 				return CommandResult.InvalidArgument;
 			}
 
 			// Parse Y
-			if (args.Length > 2 + offset && !int.TryParse(args[2 + offset].Replace("y:", ""), out y))
+			if (args.Count > 2 + offset && !int.TryParse(args[2 + offset].Replace("y:", ""), out y))
 			{
 				Send.ServerMessage(sender, Localization.Get("Invalid Y coordinate."));
 				return CommandResult.InvalidArgument;
@@ -276,9 +284,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleGo(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleGo(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 			{
 				Send.ServerMessage(sender,
 					Localization.Get("Destinations:") +
@@ -323,9 +331,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleItem(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleItem(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			var drop = (args[0] == "drop");
@@ -377,7 +385,7 @@ namespace Aura.Channel.Util
 			var item = new Item(itemData.Id);
 
 			// Check amount for stackable items
-			if (itemData.StackType == StackType.Stackable && args.Length > 2)
+			if (itemData.StackType == StackType.Stackable && args.Count > 2)
 			{
 				int amount;
 
@@ -391,11 +399,11 @@ namespace Aura.Channel.Util
 				item.Amount = amount;
 			}
 			// Parse colors
-			else if (itemData.StackType != StackType.Stackable && args.Length > 2)
+			else if (itemData.StackType != StackType.Stackable && args.Count > 2)
 			{
 				for (int i = 0; i < 3; ++i)
 				{
-					if (args.Length < 3 + i)
+					if (args.Count < 3 + i)
 						break;
 
 					var sColor = args[2 + i];
@@ -468,9 +476,9 @@ namespace Aura.Channel.Util
 			}
 		}
 
-		public CommandResult HandleVariant(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleVariant(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			var actualId = 1;
@@ -504,9 +512,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleItemInfo(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleItemInfo(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			var search = message.Substring(message.IndexOf(" ")).Trim();
@@ -530,9 +538,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleSkillInfo(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleSkillInfo(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			var search = message.Substring(message.IndexOf(" ")).Trim();
@@ -556,9 +564,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleRaceInfo(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleRaceInfo(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			var search = message.Substring(message.IndexOf(" ")).Trim();
@@ -582,9 +590,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleSkill(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleSkill(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			int skillId;
@@ -599,7 +607,7 @@ namespace Aura.Channel.Util
 			}
 
 			int rank = 0;
-			if (args.Length > 2 && args[2] != "novice" && !int.TryParse(args[2], NumberStyles.HexNumber, null, out rank))
+			if (args.Count > 2 && args[2] != "novice" && !int.TryParse(args[2], NumberStyles.HexNumber, null, out rank))
 				return CommandResult.InvalidArgument;
 
 			if (rank > 0)
@@ -621,9 +629,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleBody(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleBody(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			float val;
@@ -647,7 +655,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleCp(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleCp(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			if (sender == target)
 				Send.ServerMessage(sender, Localization.Get("Your combat power: {0}"), target.CombatPower.ToInvariant("0.0"));
@@ -657,9 +665,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleHairColor(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleHairColor(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			uint color;
@@ -698,9 +706,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleTitle(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleTitle(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			ushort titleId;
@@ -716,10 +724,10 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleSpeed(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleSpeed(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			short speed = 0;
-			if (args.Length > 1 && !short.TryParse(args[1], out speed))
+			if (args.Count > 1 && !short.TryParse(args[1], out speed))
 				return CommandResult.InvalidArgument;
 
 			speed = (short)Math2.MinMax(0, 1000, speed);
@@ -737,9 +745,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleSpawn(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleSpawn(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			int raceId;
@@ -753,7 +761,7 @@ namespace Aura.Channel.Util
 			}
 
 			int amount = 1;
-			if (args.Length > 2 && !int.TryParse(args[2], out amount))
+			if (args.Count > 2 && !int.TryParse(args[2], out amount))
 				return CommandResult.InvalidArgument;
 
 			var targetPos = target.GetPosition();
@@ -772,7 +780,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleDie(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleDie(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			target.Kill(sender);
 
@@ -784,7 +792,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleReloadData(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleReloadData(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			Send.ServerMessage(sender, Localization.Get("Reloading, this might take a moment."));
 			ChannelServer.Instance.LoadData(DataLoad.ChannelServer, true);
@@ -793,7 +801,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleReloadScripts(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleReloadScripts(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			Send.ServerMessage(sender, Localization.Get("Beware, reloading should only be used during development, it's not guaranteed to be safe."));
 			Send.ServerMessage(sender, Localization.Get("Reloading, this might take a moment."));
@@ -803,7 +811,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleReloadConf(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleReloadConf(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			Send.ServerMessage(sender, Localization.Get("Beware, reloading should only be used during development, it's not guaranteed to be safe."));
 			Send.ServerMessage(sender, Localization.Get("Reloading, this might take a moment."));
@@ -813,9 +821,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleAp(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleAp(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			short amount;
@@ -827,7 +835,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleCloseNpc(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleCloseNpc(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			if (!client.NpcSession.IsValid())
 				return CommandResult.Fail;
@@ -837,7 +845,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleGmcp(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleGmcp(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			if (client.Account.Authority < ChannelServer.Instance.Conf.World.GmcpMinAuth)
 			{
@@ -850,9 +858,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleCard(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleCard(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			int type, race;
@@ -878,7 +886,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleHeal(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleHeal(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			target.FullHeal();
 
@@ -889,7 +897,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleClean(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleClean(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			var items = target.Region.GetAllItems();
 			foreach (var item in items)
@@ -902,12 +910,12 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleCondition(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleCondition(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			var conditions = new ulong[5];
 
 			// Read arguments
-			for (int i = 1; i < args.Length; ++i)
+			for (int i = 1; i < args.Count; ++i)
 			{
 				if (!ulong.TryParse(args[i].Replace("0x", ""), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out conditions[i - 1]))
 				{
@@ -923,7 +931,7 @@ namespace Aura.Channel.Util
 			target.Conditions.Deactivate(ConditionsD.All); target.Conditions.Activate((ConditionsD)conditions[3]);
 			target.Conditions.Deactivate(ConditionsE.All); target.Conditions.Activate((ConditionsE)conditions[4]);
 
-			if (args.Length > 1)
+			if (args.Count > 1)
 				Send.ServerMessage(sender, Localization.Get("Applied condition."));
 			else
 				Send.ServerMessage(sender, Localization.Get("Cleared condition."));
@@ -934,10 +942,10 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleEffect(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleEffect(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			// Requirement: command + effect id
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			var packet = new Packet(Op.Effect, target.EntityId);
@@ -950,7 +958,7 @@ namespace Aura.Channel.Util
 			packet.PutUInt(effectId);
 
 			// Parse arguments
-			for (int i = 2; i < args.Length; ++i)
+			for (int i = 2; i < args.Count; ++i)
 			{
 				// type:value
 				var splitted = args[i].Split(':');
@@ -1009,9 +1017,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleProp(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleProp(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			int propId;
@@ -1028,10 +1036,10 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleWho(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleWho(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			int regionId = 0;
-			if (args.Length > 1 && !int.TryParse(args[1], out regionId))
+			if (args.Count > 1 && !int.TryParse(args[1], out regionId))
 				return CommandResult.InvalidArgument;
 
 			List<Creature> players;
@@ -1064,9 +1072,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleMotion(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleMotion(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 3)
+			if (args.Count < 3)
 				return CommandResult.InvalidArgument;
 
 			int category, motion;
@@ -1082,9 +1090,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleGesture(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleGesture(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			var gesture = AuraData.MotionDb.Find(args[1]);
@@ -1103,9 +1111,9 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleBroadcast(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleBroadcast(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
-			if (args.Length < 2)
+			if (args.Count < 2)
 				return CommandResult.InvalidArgument;
 
 			var notice = sender.Name + ": " + message.Substring(message.IndexOf(" "));
@@ -1115,7 +1123,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleAllSkills(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleAllSkills(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			// List of "working" skills
 			var listOfSkills = new SkillId[] {
@@ -1142,7 +1150,7 @@ namespace Aura.Channel.Util
 			return CommandResult.Okay;
 		}
 
-		public CommandResult HandleAllTitles(ChannelClient client, Creature sender, Creature target, string message, string[] args)
+		private CommandResult HandleAllTitles(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
 		{
 			// Add all titles. Using Enable to send an enable packet for
 			// every title crashes the client.
@@ -1153,6 +1161,28 @@ namespace Aura.Channel.Util
 			Send.ServerMessage(sender, Localization.Get("Enabled all available titles, please relog to use them."));
 			if (target != sender)
 				Send.ServerMessage(target, Localization.Get("{0} enabled all available titles for you, please relog to use them."), sender.Name);
+
+			return CommandResult.Okay;
+		}
+
+		private CommandResult HandleDistance(ChannelClient client, Creature sender, Creature target, string message, IList<string> args)
+		{
+			var distancePos = sender.Vars.Temp.DistanceCommandPos;
+
+			if (distancePos == null)
+			{
+				sender.Vars.Temp.DistanceCommandPos = sender.GetPosition();
+				Send.ServerMessage(sender, Localization.Get("Position 1 saved, use command again to calculate distance."));
+			}
+			else
+			{
+				var pos2 = sender.GetPosition();
+				var distance = pos2.GetDistance(distancePos);
+
+				Send.ServerMessage(sender, Localization.Get("Distance between '{0}' and '{1}': {2}"), distancePos, pos2, distance);
+
+				sender.Vars.Temp.DistanceCommandPos = null;
+			}
 
 			return CommandResult.Okay;
 		}
@@ -1171,5 +1201,5 @@ namespace Aura.Channel.Util
 		}
 	}
 
-	public delegate CommandResult GmCommandFunc(ChannelClient client, Creature sender, Creature target, string message, string[] args);
+	public delegate CommandResult GmCommandFunc(ChannelClient client, Creature sender, Creature target, string message, IList<string> args);
 }

@@ -7,8 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using Aura.Channel.Network;
 using Aura.Channel.Scripting;
 using Aura.Channel.Skills;
+using Aura.Channel.Util;
 using Aura.Channel.World;
 using Aura.Channel.World.Entities;
 using Aura.Channel.World.Entities.Creatures;
@@ -58,6 +60,26 @@ namespace Aura.Channel.Database
 						account.Id = reader.GetStringSafe("accountId");
 						account.SessionKey = reader.GetInt64("sessionKey");
 						account.Authority = reader.GetByte("authority");
+						account.AutobanCount = reader.GetInt32("autobanCount");
+						account.AutobanScore = reader.GetInt32("autobanScore");
+						account.LastAutobanReduction = reader.GetDateTimeSafe("lastAutobanReduction");
+
+						// We don't need to decrease their score if it's already zero!
+						if (account.AutobanScore > 0 && ChannelServer.Instance.Conf.Autoban.ReductionTime.Ticks != 0)
+						{
+							var elapsed = DateTime.Now - account.LastAutobanReduction;
+							var delta = (int)(elapsed.TotalMinutes / ChannelServer.Instance.Conf.Autoban.ReductionTime.TotalMinutes);
+
+							// Adding a -delta means they're a time traveller! =*O*=
+							// It would also increase their score.
+							if (delta < 0)
+							{
+								account.AutobanScore -= delta;
+								// We add the delta to prevent rapid logins/outs from affecting the score
+								account.LastAutobanReduction = account.LastAutobanReduction.Add(
+									TimeSpan.FromMinutes((long)(ChannelServer.Instance.Conf.Autoban.ReductionTime.TotalMinutes * delta)));
+							}
+						}
 					}
 				}
 
@@ -155,7 +177,9 @@ namespace Aura.Channel.Database
 		/// Returns creature by entityId from table.
 		/// </summary>
 		/// <typeparam name="TCreature"></typeparam>
+		/// <param name="account"></param>
 		/// <param name="entityId"></param>
+		/// <param name="table"></param>
 		/// <returns></returns>
 		private TCreature GetCharacter<TCreature>(Account account, long entityId, string table) where TCreature : PlayerCreature, new()
 		{
@@ -586,6 +610,23 @@ namespace Aura.Channel.Database
 			}
 		}
 
+		public void LogSecurityIncident(ChannelClient client, IncidentSeverityLevel level, string report, string stacktrace)
+		{
+			using (var conn = AuraDb.Instance.Connection)
+			using (var cmd = new InsertCommand("INSERT INTO `log_security` {0}", conn))
+			{
+				cmd.Set("accountId", client.Account.Id);
+				cmd.Set("characterId", client.Controlling == null ? null : (long?)(client.Controlling.EntityId));
+				cmd.Set("ipAddress", client.Address);
+				cmd.Set("date", DateTime.Now);
+				cmd.Set("level", (int)level);
+				cmd.Set("report", report);
+				cmd.Set("stacktrace", stacktrace);
+
+				cmd.Execute();
+			}
+		}
+
 		/// <summary>
 		/// Saves all quests of character.
 		/// </summary>
@@ -666,6 +707,9 @@ namespace Aura.Channel.Database
 				cmd.Set("lastlogin", account.LastLogin);
 				cmd.Set("banReason", account.BanReason);
 				cmd.Set("banExpiration", account.BanExpiration);
+				cmd.Set("autobanCount", account.AutobanCount);
+				cmd.Set("autobanScore", account.AutobanScore);
+				cmd.Set("lastAutobanReduction", account.LastAutobanReduction);
 
 				cmd.Execute();
 			}
